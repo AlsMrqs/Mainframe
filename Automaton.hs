@@ -5,13 +5,21 @@ import Data.Bool
 
 import qualified Data.Map as Map
 
-data State = State 
-    { final       :: Bool 
-    , transitions :: [Transition] } deriving (Show)
+import Test
+
+data State a = State 
+    { isFinal     :: Bool 
+    , transitions :: a } deriving (Show) -- [Transition] } deriving (Show)
+
+instance Functor State where
+    fmap f (State b t) = State b (f t)
+
+popTransition :: State [Transition] -> State [Transition]
+popTransition s | null (transitions s) = s | otherwise = fmap tail s
 
 data Transition = Transition 
-    { alphabet  :: [Char] 
-    , nextState :: State } deriving (Show)
+    { alphabet :: [Char] 
+    , getState :: State [Transition] } deriving (Show)
 
 signal  = State False [Transition ['+','-']  number0]
 number0 = State True  [Transition ['0'..'9'] number1]
@@ -19,26 +27,28 @@ number1 = State True  [Transition ['0'..'9'] number1, Transition ['.'] number2]
 number2 = State False [Transition ['0'..'9'] number3] 
 number3 = State True  [Transition ['0'..'9'] number3]
 
-step :: State -> Char -> Maybe State
-step s c = if null . transitions $ s then Nothing
-    else 
-    if c `elem` (alphabet x) 
-        then Just (nextState x) 
-        else step (State (final s) xs) c
-    where
-        (x:xs) = transitions s
+step :: State [Transition] -> Char -> Maybe (State [Transition])
+step currentState character = 
+    if null (transitions currentState) 
+        then Nothing
+        else 
+            let possibleTransitions@(headTransition:tailTransitions) = transitions currentState 
+            in
+                if character `elem` (alphabet headTransition)
+                    then Just $ getState headTransition
+                    else step (popTransition currentState) character
 
-lexer :: [Char] -> State -> ([Char], [Char])
+lexer :: [Char] -> State [Transition] -> ([Char], [Char])
 lexer []       _ = ([], [])
-lexer l@(x:xs) s = let canRead_x = isJust $ step s x in
-    if canRead_x then 
-        let state  = fromJust $ step s x
+lexer l@(x:xs) currentState = if isNothing $ step currentState x 
+    then ([], l)
+    else 
+        let state  = fromJust $ step currentState x
             (a, b) = lexer xs state
         in 
             if null a
-                then bool ([], l) (x:[], xs) $ final state
+                then bool ([], l) (x:[], xs) $ isFinal state
                 else (x:a, b)
-    else ([], l)
     
 main :: IO ()
 main = return ()
