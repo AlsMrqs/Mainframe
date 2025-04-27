@@ -1,5 +1,6 @@
 module Graph where
 
+import Prelude hiding (read)
 import Data.Maybe
 import Data.Bool
 
@@ -36,14 +37,14 @@ step character state
 --readable :: Char -> State [Transition] -> Bool
 --readable = isJust . step
 
-lexer :: [Char] -> State [Transition] -> ([Char], [Char])
-lexer []       _ = ([], [])
-lexer l@(x:xs) state 
+read :: [Char] -> State [Transition] -> ([Char], [Char])
+read []       _ = ([], [])
+read l@(x:xs) state 
     | isNothing (step x state) = ([], l) 
     | otherwise = 
         if token == []
             then bool ([], l) (x:[], xs) . isFinal $ fromJust (step x state)
             else (x:token, rest)
     where
-        (token, rest) = lexer xs . fromJust $ step x state
+        (token, rest) = read xs . fromJust $ step x state
 
