@@ -1,24 +1,39 @@
 module Automaton where
 
-import Prelude hiding (exponent)
+import Prelude hiding (exponent, read, exp)
+import Data.Maybe (fromJust, isNothing, isJust)
 import Data.List (find)
 import Graph
 
-identifier = State False [Transition ('_' : ['a'..'z']) _identifier]
-_identifier = State True [Transition (('_' : ['a'..'z']) ++ ['A'..'Z'] ++ ['0'..'9']) _identifier]
+num = ['0'..'9']
+sig = ['+','-']
+idt = '_' : ['a'..'z']
+idT = '_' : (['a'..'z'] ++ ['A'..'Z'])
+ope = ['+','-','*','/','^']
+exp = ['e','E']
+pnt = ['.','(',',',')']
 
-signal = State False [Transition ['+','-','*','/','^','='] final]
+identifier = State False [Transition (idt) _identifier]
+_identifier = State True [Transition (idT) _identifier]
 
-number = State False [Transition ['0'..'9'] integer]
-integer = State True  [Transition ['0'..'9'] integer, Transition ['.'] point, Transition ['e'] exponent] 
-point = State False [Transition ['0'..'9'] double] 
-double = State True  [Transition ['0'..'9'] double, Transition ['e'] exponent]
-exponent = State False [Transition ['+','-'] expoSignal, Transition ['0'..'9'] expoInteger]
-expoSignal = State False [Transition ['0'..'9'] expoInteger]
-expoInteger = State True  [Transition ['0'..'9'] expoInteger]
-
+operator = State False [ Transition (ope) final ]
+punctuation = State False [ Transition (pnt) final ]
 final = State True []
 
-start :: Char -> Maybe (State [Transition])
-start x = find (elem x . alphabet . nearby) [identifier, signal, number]
+number = State False [ Transition (num) integer ]
+integer = State True  [ Transition (num) integer, Transition (pnt) point, Transition (exp) exponent ] 
+point = State False [ Transition (num) double ] 
+double = State True  [ Transition (num) double, Transition (exp) exponent ]
+exponent = State False [ Transition (sig) expoSignal, Transition (num) expoInteger ]
+expoSignal = State False [ Transition (num) expoInteger ]
+expoInteger = State True  [ Transition (num) expoInteger ]
+
+lexer :: [Char] -> ([Char], [Char])
+lexer [] = ([], [])
+lexer l@(x:xs) 
+    | isNothing automaton = ([], l) 
+    | otherwise = read (fromJust automaton) l
+    where
+        automaton = find (accept x) -- Language.Automaton ->
+            $ [identifier, operator, number, punctuation]
 
