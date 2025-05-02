@@ -9,9 +9,13 @@ data State a = State Bool a deriving Show
 instance Functor State where 
     fmap f (State b t) = State b (f t)
 
-data Transition = Transition
-    { alphabet :: [Char]
-    , getState :: State [Transition] } deriving Show
+data Transition = Transition [Char] (State [Transition])
+
+alphabet :: Transition -> [Char]
+alphabet (Transition x _) = x
+
+getState :: Transition -> State [Transition]
+getState (Transition _ x) = x
 
 isFinal :: State [Transition] -> Bool
 isFinal (State x _) = x
@@ -29,22 +33,25 @@ nearby :: State [Transition] -> Transition
 nearby = head . transitions
 
 step :: Char -> State [Transition] -> Maybe (State [Transition]) 
-step character state 
+step x state 
     | isLast state = Nothing
-    | elem character . alphabet $ nearby state = next state 
-    | otherwise = step character (fmap tail state) 
+    | elem x . alphabet $ nearby state = next state 
+    | otherwise = step x (fmap tail state) 
 
---readable :: Char -> State [Transition] -> Bool
---readable = isJust . step
+accept :: Char -> State [Transition] -> Bool
+accept x = isJust . step x
 
-read :: [Char] -> State [Transition] -> ([Char], [Char])
-read []       _ = ([], [])
-read l@(x:xs) state 
+read :: State [Transition] -> [Char] -> ([Char], [Char])
+read _     [] = ([], [])
+read state l@(x:xs)
     | isNothing (step x state) = ([], l) 
     | otherwise = 
         if token == []
             then bool ([], l) (x:[], xs) . isFinal $ fromJust (step x state)
             else (x:token, rest)
     where
-        (token, rest) = read xs . fromJust $ step x state
+        (token, rest) = read (fromJust $ step x state) xs
+
+readable :: State [Transition] -> [Char] -> Bool
+readable = (\state -> (==) "" . snd . read state)
 
