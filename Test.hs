@@ -1,13 +1,23 @@
 module Test where
 
-import System.Random
 import Prelude hiding (exp)
+import System.Random
+import Data.Either
+import Data.List
+import Automaton
+import Parser
 
-numbers = "0123456789" ++ "+-" ++ "." ++ "e"
+symbols = "0123456789" ++ "+-" ++ "." ++ "e" ++ "(,)" ++ "xyz"
 
 genIdx :: IO Int
-genIdx = newStdGen >>= return . flip mod 14 . fst . random 
+genIdx = newStdGen >>= return . flip mod (length symbols). fst . random 
 
 genNumber :: IO [Char]
-genNumber = fmap (map ((!!) numbers)) . sequence . take 12 . cycle $ [genIdx]
+genNumber = fmap (map ((!!) symbols)) . sequence . take 7 . cycle $ [genIdx]
+
+runTest :: IO ()
+runTest = do
+    generation <- (sequence . take 10000 $ cycle [genNumber])
+    putStrLn ""
+    print . filter (isRight . parser) $ generation
 
