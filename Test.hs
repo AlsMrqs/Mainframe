@@ -4,7 +4,6 @@ import Prelude hiding (exp)
 import System.Random
 import Data.Either
 import Data.List
-import Automaton
 import Parser
 
 symbols = "0123456789" ++ "+-" ++ "." ++ "e" ++ "(,)" ++ "xyz"
