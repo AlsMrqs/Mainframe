@@ -3,39 +3,15 @@ module Parser where
 import Data.Maybe
 import Data.Tree
 import Data.List
-import Automaton -- (lexer)
-import Graph
-import Grammar
-
-type Automaton = State [Transition]
-
-data Symbol = Variable [Production] | Terminal Automaton
-    deriving (Show)
-
-newtype Production = Production { chain :: [Symbol] }
-    deriving (Show)
-
-isVariable :: Symbol -> Bool
-isVariable x = case x of
-    (Variable _) -> True
-    _            -> False
-
-isTerminal :: Symbol -> Bool
-isTerminal = not . isVariable
-
-fromTerminal :: Symbol -> Automaton
-fromTerminal (Terminal x) = x
-fromTerminal _            = error "Symbol.fromTerminal: Variable"
-
-fromVariable :: Symbol -> [Production]
-fromVariable (Variable x) = x
-fromVariable _            = error "Symbol.fromVariable: Terminal"
+import Graph.Automaton
+import Graph.Grammar
+import Lexer
 
 open = State False [Transition ['('] $ State True []]
 separator = State False [Transition [','] $ State True []]
 close = State False [Transition [')'] $ State True []]
 
-source = [ Production [Terminal open, Variable element, Terminal close] ] -- [ tuple ]
+grammar = [ Production [Terminal open, Variable element, Terminal close] ]
 element = [ Production [Variable expression, Variable composition] ]
 composition = [ Production [Terminal separator, Variable element]
               , Production [] ]
@@ -47,24 +23,13 @@ expression =
 expansion = [ Production [Terminal operator, Variable expression]
             , Production [] ]
 
-type Token = [Char]
-type Rule = [Production]
-
-match :: Token -> Production -> Bool
-match token prod
-    | null . chain $ prod = False
-    | isVariable . head . chain $ prod = False
-    | otherwise = equal (fromTerminal . head $ chain prod) token
-    where
-        equal = readable
-
 type Error = [Char]
 
 parser :: [Char] -> Either Error Bool
 parser []    = Left "Empty"
 parser input =
     let (token, rest) = lexer input 
-        production = find (match token) (source :: [Production]) in
+        production = find (match token) (grammar :: [Production]) in
     if isNothing production
         then Left ("GLC can't read: " ++ token)
         else manager input (chain $ fromJust production) 
