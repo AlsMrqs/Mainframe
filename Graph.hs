@@ -10,6 +10,10 @@ instance Functor State where
     fmap f (State b t) = State b (f t)
 
 data Transition = Transition [Char] (State [Transition])
+    -- deriving (Show)
+
+instance Show Transition where
+    show (Transition x _) = "Trans.. " ++ (show x)
 
 alphabet :: Transition -> [Char]
 alphabet (Transition x _) = x
