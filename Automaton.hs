@@ -7,17 +7,17 @@ import Graph
 
 num = ['0'..'9']
 sig = ['+','-']
-idt = '_' : ['a'..'z']
+idt = ['x','y','z','X','Y','Z']
 idT = '_' : (['a'..'z'] ++ ['A'..'Z'])
 ope = ['+','-','*','/','^']
 exp = ['e','E']
-pnt = ['.','(',',',')']
+pnt = ['.'] 
+pun = ['.','(',',',')']
 
-identifier = State False [Transition (idt) _identifier]
-_identifier = State True [Transition (idT) _identifier]
+identifier = State False [Transition (idt) final]
 
 operator = State False [ Transition (ope) final ]
-punctuation = State False [ Transition (pnt) final ]
+punctuation = State False [ Transition (pun) final ]
 final = State True []
 
 number = State False [ Transition (num) integer ]
@@ -30,10 +30,11 @@ expoInteger = State True  [ Transition (num) expoInteger ]
 
 lexer :: [Char] -> ([Char], [Char])
 lexer [] = ([], [])
+lexer (' ':xs) = lexer xs
 lexer l@(x:xs) 
     | isNothing automaton = ([], l) 
     | otherwise = read (fromJust automaton) l
     where
-        automaton = find (accept x) -- Language.Automaton ->
+        automaton = find (accept x)
             $ [identifier, operator, number, punctuation]
 
