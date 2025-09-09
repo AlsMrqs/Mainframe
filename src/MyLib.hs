@@ -1,5 +1,7 @@
-module MyLib where
+module MyLib 
+    ( module Engine.Obj
+    , module Engine.Universe 
+    ) where
 
-someFunc :: IO ()
-someFunc = putStrLn "Some function!"
-
+import Engine.Obj
+import Engine.Universe

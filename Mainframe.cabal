@@ -52,25 +52,35 @@ extra-doc-files:    CHANGELOG.md
 -- extra-source-files:
 
 common warnings
-    ghc-options: -Wall
+    ghc-options: -Wall -threaded
 
 library
     -- Import common warning flags.
     import:           warnings
 
     -- Modules exported by the library.
-    exposed-modules:  MyLib
+    exposed-modules:  MyLib 
 
     -- Modules included in this library but not exported.
-    -- other-modules:
+    other-modules: 
+        Engine.Obj,
+        Engine.Universe,
+        Engine.Editor,
+        Engine.Control,
+        Engine.Render,
+        Graph.Automaton,
+        Lexer
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.17.2.1,
-                      GLUT,
-                      OpenGL
+    build-depends:    
+        base ^>=4.17.2.1,
+        random,
+        GLUT,
+        OpenGL,
+        containers
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -86,7 +96,14 @@ executable Mainframe
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    -- other-modules:
+    other-modules: 
+        Engine.Control
+        Engine.Render
+        Engine.Obj
+        Engine.Universe
+        Engine.Editor
+        Graph.Automaton
+        Lexer
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -94,8 +111,10 @@ executable Mainframe
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.17.2.1,
+        random,
         GLUT,
         OpenGL,
+        containers,
         Mainframe
 
     -- Directories containing source files.
@@ -103,6 +122,8 @@ executable Mainframe
 
     -- Base language which the package is written in.
     default-language: Haskell2010
+
+    -- ghc-options: -threaded
 
 test-suite Mainframe-test
     -- Import common warning flags.
