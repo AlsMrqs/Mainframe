@@ -1,9 +1,10 @@
-module Lexer where
+module Compiler.Language.Dictionary where
 
-import Prelude hiding (exponent, read, exp)
-import Data.Maybe (fromJust, isNothing, isJust)
-import Data.List (find)
-import Graph.Automaton
+import Prelude hiding (read,exponent,exp)
+import Data.Maybe
+import Data.Bool
+
+import Compiler.Lexer
 
 num = ['0'..'9']
 sig = ['+','-']
@@ -13,6 +14,10 @@ ope = ['+','-','*','/','^']
 exp = ['e','E']
 pnt = ['.'] 
 pun = ['.','(',',',')']
+
+open      = State None_ False [Transition ['('] $ State Starter_ True []]
+close     = State None_ False [Transition [')'] $ State Finisher_ True []]
+separator = State None_ False [Transition [','] $ State Separator_ True []]
 
 machine = State None_ False 
     [ Transition (idt) identifier
@@ -42,27 +47,4 @@ expoSignalDouble   = State None_ False [ Transition (num) expoDouble ]
 expoDouble         = State Double_ True  [ Transition (num) expoDouble ]
 
 final x = State x True []
-
-lexer :: [Char] -> ([Char], [Char])
-lexer []       = ([], [])
-lexer (' ':xs) = lexer xs
-lexer l@(x:xs) = case lexer' x ([], machine) of
-    Left  ((Token x _), _) -> (x, l)
-    Right s'               -> middle xs s'
-
-middle :: [Char] -> ([Char], Automaton) -> ([Char], [Char])
-middle []       s = (fst s, [])
-middle (' ':xs) s = middle xs s
-middle l@(x:xs) s = case lexer' x s of
-    Left  ((Token y _), _) -> (y, l)
-    Right s'               -> middle xs s'
-
-f1 :: Char -> Automaton -> (Bool, Automaton)
-f1 = \c s -> maybe (False, s) (\x -> (True,x)) $ step c s
-
-lexer' :: Char -> ([Char], Automaton) -> Either (Token, Char) ([Char], Automaton)
-lexer' c (str, s) = let (b, s') = f1 c s in 
-    if b 
-        then Right (str ++ [c], s') 
-        else Left  (Token str $ typeof s, c)
 

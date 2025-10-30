@@ -63,13 +63,18 @@ library
 
     -- Modules included in this library but not exported.
     other-modules: 
-        Engine.Obj,
-        Engine.Universe,
-        Engine.Editor,
+        Program.Bitmap,
+        Engine.Object.Particle,
+        Engine.Math.Dynamics,
+        Engine.Math.Space,
         Engine.Control,
         Engine.Render,
-        Graph.Automaton,
-        Lexer
+        Engine.Core,
+        Compiler.Language.Dictionary,
+        Compiler.Language.Grammar,
+        Compiler.Parser,
+        Compiler.Lexer,
+        Compiler.Solver
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -80,7 +85,9 @@ library
         random,
         GLUT,
         OpenGL,
-        containers
+        containers,
+        process,
+        time
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -97,13 +104,18 @@ executable Mainframe
 
     -- Modules included in this executable, other than Main.
     other-modules: 
+        Program.Bitmap
+        Engine.Object.Particle
+        Engine.Math.Dynamics
+        Engine.Math.Space
         Engine.Control
         Engine.Render
-        Engine.Obj
-        Engine.Universe
-        Engine.Editor
-        Graph.Automaton
-        Lexer
+        Engine.Core
+        Compiler.Language.Dictionary
+        Compiler.Language.Grammar
+        Compiler.Parser
+        Compiler.Lexer
+        Compiler.Solver
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -115,7 +127,9 @@ executable Mainframe
         GLUT,
         OpenGL,
         containers,
-        Mainframe
+        Mainframe,
+        process,
+        time
 
     -- Directories containing source files.
     hs-source-dirs:   app src

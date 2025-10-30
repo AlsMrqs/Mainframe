@@ -1,24 +1,37 @@
-module Graph.Automaton where
+module Compiler.Lexer where
 
-import Prelude hiding (read)
-import Data.Maybe
+import Prelude hiding (exponent, read, exp)
+import Data.Maybe (fromJust, isNothing, isJust)
+import Data.List (find)
 import Data.Bool
 
-data Transition = Transition [Char] (State [Transition]) deriving Show
-data State a = State Type Bool a deriving Show
+-- Dictionary --
+data Type = Starter_ 
+          | Separator_ 
+          | Finisher_ 
+          | Punctuation_ 
+          | Operator_ 
+          | Variable_ 
+          | Integer_ 
+          | Double_ 
+          | None_ 
+    deriving (Show, Eq)
 
-data Type = Starter_ | Separator_ | Finisher_
-    | Punctuation_ 
-    | Operator_ | Variable_ | Integer_ | Double_ | None_ deriving (Show, Eq)
+data Token = Token [Char] Type 
+    deriving Show
+-- End --
 
-data Token = Token [Char] Type deriving Show
+data Transition = Transition [Char] (State [Transition]) 
+    deriving Show
 
-type Automaton = State [Transition]
+data State a = State Type Bool a
+    deriving Show
 
 instance Functor State where 
     fmap f (State type_ prep content) = State type_ prep (f content)
 
--- Deprecated -- 
+type Automaton = State [Transition]
+
 typeof :: Automaton -> Type
 typeof (State x _ _) = x
 
@@ -67,4 +80,13 @@ read state l@(x:xs) = case step x state of
 
 readable :: State [Transition] -> [Char] -> Bool
 readable state = (==) "" . snd . read state
+
+f1 :: Char -> Automaton -> (Bool, Automaton)
+f1 = \c s -> maybe (False, s) (\x -> (True,x)) $ step c s
+
+lexer' :: Char -> ([Char], Automaton) -> Either (Token, Char) ([Char], Automaton)
+lexer' c (str, s) = let (b, s') = f1 c s in 
+    if b 
+        then Right (str ++ [c], s') 
+        else Left  (Token str $ typeof s, c)
 
