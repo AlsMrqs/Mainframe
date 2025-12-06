@@ -1,6 +1,8 @@
 module Engine.Math.Space where
 
 import Data.Time.Clock
+import Data.Bool
+import Data.List (uncons)
 
 type Point = (Double,Double,Double)
 
@@ -10,6 +12,28 @@ getTime = do
     return
         . (/1e11) . fromIntegral
         . diffTimeToPicoseconds $ utctDayTime curretTime
+
+-- Triangle Area
+
+isInsideTriangle :: Point -> Point -> Point -> Point -> Bool
+isInsideTriangle a b c p = let
+    c1 = getCrossProduct (subtr b a) (subtr p a)
+    c2 = getCrossProduct (subtr c b) (subtr p b)
+    c3 = getCrossProduct (subtr a c) (subtr p c)
+    result = [c1,c2,c3]
+    in all (>= 0) result || all (<= 0) result
+
+isInsidePolygon :: Point -> [Point] -> Bool
+isInsidePolygon p lst = case uncons lst of
+    Nothing     -> False
+    Just (x,xs) -> g p x xs
+
+g :: Point -> Point -> [Point] -> Bool
+g p k []         = False
+g p k l@(x:[])   = False
+g p k l@(x:y:xs) = isInsideTriangle k x y p || g p k (y:xs)
+
+-- End - Triangle Area
 
 getX :: Point -> Double
 getX (x,_,_) = x
@@ -51,6 +75,9 @@ divPointBy k (x,y,z) = (x/k,y/k,z/k)
 
 getDotProduct :: Point -> Point -> Double
 getDotProduct (x,y,z) (i,j,k) = (x*i) + (y*j) + (z*k)
+
+getCrossProduct :: Point -> Point -> Double
+getCrossProduct (x0,y0,_) (x1,y1,_) = x0*y1 - x1*y0
 
 getAngleBetween :: Point -> Point -> Double
 getAngleBetween (x,y,z) (i,j,k) = 

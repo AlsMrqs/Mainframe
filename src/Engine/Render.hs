@@ -6,6 +6,9 @@ import Control.Concurrent
 import Control.Concurrent.MVar
 import System.Process
 
+import qualified Data.Set as Set
+import qualified Data.Map as Map
+
 import qualified Engine.Core as Core
 import Engine.Object.Particle
 import Engine.Math.Space
@@ -17,11 +20,40 @@ import Compiler.Parser
 import Compiler.Lexer
 import Compiler.Solver
 
+engineDisplay :: Window -> MVar Core.Node -> DisplayCallback
+engineDisplay wind nodeMVar = do
+    clear [ColorBuffer]
+    color $ Color3 0 1 (1:: GLfloat)
+    renderPrimitive Points . mapM_ draw_ $ [(0,0,0)]
+
+    -- render Button
+    node <- readMVar nodeMVar
+    color $ Color3 0 0.5 (0.5:: GLfloat)
+    -- mapM_ (renderPrimitive Polygon . mapM_ draw_) 
+    --     $ concat . map snd $ Map.toList (Core.sprites $ Core.program node)
+    mapM_ (\(pm, lst) -> renderPrimitive pm $ mapM_ draw_ lst) . map fst
+        $ Map.toList (Core.object . Core.program $ node) 
+
+    case Map.lookup "Bitmap.Button" (Core.element $ Core.program node) of
+        Nothing -> return ()
+        Just e1 -> renderPrimitive (Core.mode e1) $ mapM_ draw_ (Core.location e1)
+
+    swapBuffers
+    postRedisplay Nothing
+
 draw_ :: (GLfloat, GLfloat, GLfloat) -> DisplayCallback 
 draw_ (x,y,z) = vertex $ Vertex3 x y z
 
 pointToGLPoint_ :: Point -> (GLfloat, GLfloat, GLfloat)
 pointToGLPoint_ (x,y,z) = (realToFrac x, realToFrac y, realToFrac z)
+
+-- bitmapButton :: [(GLfloat, GLfloat, GLfloat)]
+-- bitmapButton = [(0,0,0),(0,0.15,0),(0.25,0.15,0),(0.25,0,0)]
+
+
+
+
+
 
 {- (Command Dynamics) *Script Design -} 
 -- read-only
@@ -33,6 +65,9 @@ mainRender nodeMVar = do
     clear [ColorBuffer]
     color $ Color3 0 0 (1 :: GLfloat)
     renderPrimitive Lines . mapM_ draw_ $ Core.frame (Core.program node) 
+    color $ Color3 1 1 (1 :: GLfloat)
+    -- Here is a Data.Set now!!
+    mapM_ (renderPrimitive Polygon . mapM_ draw_) . Set.toList $ Core.polygons (Core.program node)
     swapBuffers
     postRedisplay Nothing
      

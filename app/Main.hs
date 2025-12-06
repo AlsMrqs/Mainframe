@@ -5,42 +5,40 @@ import Graphics.UI.GLUT hiding (Text,bitmap,Program)
 import Control.Concurrent
 import System.IO
 import System.Process
-import qualified Data.Map as Data.Map
-import qualified Data.Maybe as Data.Maybe
-import Data.List hiding (singleton)
+import Data.List as List hiding (singleton)
+import qualified Data.Map as Map
+import qualified Data.Set as Set
+import qualified Data.Maybe as Maybe
 
-import Program.Bitmap
+import qualified Program.Bitmap as Bitmap
 
+import qualified Engine.Core as Core
 import Engine.Object.Particle
 import Engine.Math.Dynamics
 import Engine.Math.Space
 import Engine.Control
 import Engine.Render
-import qualified Engine.Core as Core
+import Engine.Element
+import qualified Engine.Main as Engine.Main
+import qualified Engine.Math.Space as Math
+
+import Kernel.Core
 
 import Compiler.Language.Dictionary
 import Compiler.Language.Grammar
 import Compiler.Parser
 import Compiler.Lexer
 import Compiler.Solver
-
-engine = Core.Node
-    { Core.program = bitmap
-    , Core.caller  = Nothing
-    , Core.link    = [] }
+import Graphics.UI.GLUT
 
 main :: IO ()
 main = do
     (progName,_) <- getArgsAndInitialize
-    _window      <- createWindow progName
-
-    engine_ <- newMVar $ engine
-
-    displayCallback       $= addTimerCallback 60 (mainRender engine_)
-    keyboardMouseCallback $= Just (mainKeyboardMouse engine_{-MVar Core.Node-})
-    mouseCallback         $= Just (mainMouse engine_)
-    motionCallback        $= Just (mainMotion engine_)
-    -- mouseCallback         $= Just (mouseHandler rotation)
+    -- Call Engine
+    -- Engine -> Calls Bitmap!!
+    (Core.call . Core.program $ Engine.Main.root) Nothing -- make Bitmap -> return (Sprite)
+    -- Call Bitmap
+    -- (Core.call . Core.program $ Bitmap.bitmapNode) Nothing
     mainLoop
 
 {- Main Function - The software starts here -}
