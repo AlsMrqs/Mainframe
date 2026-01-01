@@ -20,6 +20,11 @@ import Program.Bitmap.Script.KeyboardMouse
 import Program.Bitmap.Script.Motion
 import Program.Bitmap.Script.Mouse
 
+import Struct.System
+import Struct.Program
+
+-- start :: Maybe Node -> Program
+
 start :: Maybe Node -> IO ()
 start callerNode= do
     bitmapWindow <- createWindow "Bitmap"
@@ -28,12 +33,13 @@ start callerNode= do
     windowFlag <- newIORef 1
 
     currentWindow         $= Just bitmapWindow
-    postRedisplay (Just bitmapWindow)
+    -- postRedisplay (Just bitmapWindow)
     displayCallback       $= (bitmapDisplay bitmapWindow windowFlag engine_)
     keyboardMouseCallback $= Just (bitmapKeyboardMouse (bitmapWindow, windowFlag) $ engine_)
     mouseCallback         $= Just (bitmapMouse engine_)
     motionCallback        $= Just (bitmapMotion engine_)
 
+bitmapNode :: System
 bitmapNode = Node
     { program = bitmap
     , caller = Maybe.Nothing

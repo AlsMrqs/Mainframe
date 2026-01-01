@@ -1,10 +1,10 @@
-module Kernel.Core where
+module Kernel.Struct where
 
-import Data.List as List
-import Data.Map as Map
 import Data.Maybe as Maybe
+import Data.List as List
 
-import Engine.Math.Space as Math
+-- import Data.Map as Map
+-- import Engine.Math.Space as Math
 
 data Graph a k = Vertex 
     { vert :: a 
@@ -14,7 +14,9 @@ instance (Show a) => Show (Graph a k) where
     show = (++) "Vertex " . show . vert
 
 cross :: k -> Graph a k -> Maybe (Graph a k)
-cross x = Maybe.maybe Nothing (flip ($) x) . List.find (Maybe.isJust . flip ($) x) . edge
+cross x = Maybe.maybe Nothing (flip ($) x) 
+    . List.find (Maybe.isJust . flip ($) x) 
+    . edge
 
 -- Graph Figure Position -- Mouse Position change Figure State
 

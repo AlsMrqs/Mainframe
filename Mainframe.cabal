@@ -63,26 +63,18 @@ library
 
     -- Modules included in this library but not exported.
     other-modules: 
-        Kernel.Core,
-        Program.Bitmap,
-        Program.Bitmap.Design,
-        Program.Bitmap.Script.Display,
-        Program.Bitmap.Script.KeyboardMouse,
-        Program.Bitmap.Script.Motion,
-        Program.Bitmap.Script.Mouse,
-        Engine.Object.Particle,
-        Engine.Math.Dynamics,
-        Engine.Math.Space,
-        Engine.Control,
-        Engine.Render,
-        Engine.Element,
-        Engine.Core,
-        Engine.Main,
-        Compiler.Language.Dictionary,
-        Compiler.Language.Grammar,
-        Compiler.Parser,
-        Compiler.Lexer,
-        Compiler.Solver
+        Struct.System,
+        Struct.Compass,
+        Struct.Space,
+        Struct.Program,
+        Struct.Screen,
+        Struct.Manager,
+        Struct.Interface,
+        Struct.Control,
+        Struct.Render,
+        Struct.DBMS,
+        Struct.Engine,
+        Struct.Math
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -90,6 +82,7 @@ library
     -- Other library packages from which modules are imported.
     build-depends:    
         base ^>=4.18.3.0,
+        mtl,
         random,
         GLUT,
         OpenGL,
@@ -112,26 +105,18 @@ executable Mainframe
 
     -- Modules included in this executable, other than Main.
     other-modules: 
-        Kernel.Core
-        Program.Bitmap
-        Program.Bitmap.Design
-        Program.Bitmap.Script.Display
-        Program.Bitmap.Script.KeyboardMouse
-        Program.Bitmap.Script.Motion
-        Program.Bitmap.Script.Mouse
-        Engine.Object.Particle
-        Engine.Math.Dynamics
-        Engine.Math.Space
-        Engine.Control
-        Engine.Render
-        Engine.Element
-        Engine.Core
-        Engine.Main
-        Compiler.Language.Dictionary
-        Compiler.Language.Grammar
-        Compiler.Parser
-        Compiler.Lexer
-        Compiler.Solver
+        Struct.System
+        Struct.Compass
+        Struct.Space
+        Struct.Program
+        Struct.Screen
+        Struct.Manager
+        Struct.Interface
+        Struct.Control
+        Struct.Render
+        Struct.DBMS
+        Struct.Engine
+        Struct.Math
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -139,6 +124,7 @@ executable Mainframe
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.18.3.0,
+        mtl,
         random,
         GLUT,
         OpenGL,

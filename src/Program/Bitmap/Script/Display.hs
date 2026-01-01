@@ -1,12 +1,8 @@
 module Program.Bitmap.Script.Display where
-
 import Graphics.Rendering.OpenGL
 import Graphics.UI.GLUT
-
 import Control.Concurrent.MVar
-
 import qualified Engine.Core as Core
-
 import qualified Data.Set as Set
 import Data.IORef
 

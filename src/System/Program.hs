@@ -1,27 +1,8 @@
-module Engine.Core where
-    -- todo: exports -> Graphics.Rendering.OpenGL
-    -- Maybe unecessary
+module System.Program where
 
-import Graphics.Rendering.OpenGL hiding (Program)
-import Graphics.UI.GLUT hiding (Program)
+import Graphics.Rendering.OpenGL
 import Control.Concurrent.MVar
 
-import qualified Data.Set as Set
-import qualified Data.Map as Map
-import qualified Data.Maybe as Maybe
-import qualified Data.List as List
-import Data.IORef
-
-{-Network-} -- Graph
-data Node = Node
-    { program :: Program
-    , caller  :: Maybe Node
-    , link    :: [Node] }
-
-access :: String -> Node ->  Maybe Node
-access str node = List.find ((==) str . name . program) . link $ node
-
-{-Executable-} -- Program
 data Program = Program
     { name          :: [Char]                                   
     -- Program Executable
@@ -47,33 +28,10 @@ data Program = Program
     , terminal      :: CLI
     , sprites       :: Map.Map [Char] [[(GLfloat,GLfloat,GLfloat)]] } -- [Polygon]
 
-
-data Element = Element  -- typing
-    { code      :: String
-    , mode      :: PrimitiveMode
-    , theColor  :: Color3 GLfloat
-    , location  :: [(GLfloat,GLfloat,GLfloat)]
-    , mouseOver :: Maybe (IO ())
-    , onClick   :: Maybe (IO ()) }
-
-data Figure = Figure -- Great!!!!
-    { a :: PrimitiveMode
-    , b :: Color3 GLfloat
-    , c :: [(GLfloat,GLfloat,GLfloat)] }
-
--- bitmapButton = Element 
---     { code = "Bitmap.start"
---     , mode = Polygon
---     , color = Color3 0.2 0.0 (1.0 :: GLfloat)
---     , position = [(0,0,0), (0,0.15,0), (0.25,0.15,0), (0.25,0,0)]
---     , mouseOver = Nothing
---     , onClick = Nothing }
-
 data CLI = CLI
-    { active    :: Bool
-    , inbox     :: [Char]
-    , history   :: [[Char]] 
-    } deriving Show
+    { active  :: Bool
+    , inbox   :: [Char]
+    , history :: [[Char]] } deriving Show
 
 turnOn :: CLI -> CLI
 turnOn cli = cli { active = True }
@@ -86,5 +44,4 @@ saveInbox cli = CLI (active cli) [] $
     if (inbox cli) == []
         then history cli 
         else history cli ++ [inbox cli]
--- nothing
 
