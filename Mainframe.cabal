@@ -63,18 +63,29 @@ library
 
     -- Modules included in this library but not exported.
     other-modules: 
+        Struct.Shell,
+        -- Struct.Program.Shell.Callback,
+        Struct.Program.BitMap.BitMap,
+        Struct.Program.BitMap.Callback,
         Struct.System,
-        Struct.Compass,
+        Struct.Graph,
+        Struct.Callback,
+        -- Struct.DBMS,
+        -- Struct.Compass,
+        -- Struct.Mouse,
+        -- Struct.Program,
         Struct.Space,
-        Struct.Program,
+        -- Struct.Triangle,
+        Struct.Render,
+        -- Struct.Cube,
+        -- Struct.Control,
+        Struct.Math,
         Struct.Screen,
         Struct.Manager,
-        Struct.Interface,
-        Struct.Control,
-        Struct.Render,
-        Struct.DBMS,
-        Struct.Engine,
-        Struct.Math
+        -- Struct.Engine,
+        -- Struct.Program,
+        -- Struct.Interface,
+        -- Struct.Font
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -88,7 +99,8 @@ library
         OpenGL,
         containers,
         process,
-        time
+        time,
+        csound-expression
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -105,18 +117,29 @@ executable Mainframe
 
     -- Modules included in this executable, other than Main.
     other-modules: 
+        Struct.Shell
+        -- Struct.Program.Shell.Callback
+        Struct.Program.BitMap.BitMap
+        Struct.Program.BitMap.Callback
         Struct.System
-        Struct.Compass
+        Struct.Graph
+        Struct.Callback
+        -- Struct.Compass
+        -- Struct.Program
+        -- Struct.Mouse
         Struct.Space
-        Struct.Program
+        -- Struct.Triangle
+        -- Struct.Cube
+        Struct.Render
+        Struct.Math
+        -- Struct.Control
+        -- Struct.Program
         Struct.Screen
         Struct.Manager
-        Struct.Interface
-        Struct.Control
-        Struct.Render
-        Struct.DBMS
-        Struct.Engine
-        Struct.Math
+        -- Struct.Interface
+        -- Struct.DBMS
+        -- Struct.Engine
+        -- Struct.Font
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -131,7 +154,8 @@ executable Mainframe
         containers,
         Mainframe,
         process,
-        time
+        time,
+        csound-expression
 
     -- Directories containing source files.
     hs-source-dirs:   app src

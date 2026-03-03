@@ -1,32 +1,25 @@
 module Struct.Program where
+import qualified Graphics.UI.GLUT as GLUT
+import qualified Struct.Program.Shell.Callback as Shell
+import qualified Struct.Program.BitMap.Callback as BitMap
+import qualified Struct.Manager as Manager
+import qualified Struct.Graph as Graph
+import qualified Data.List as List (elem)
+import qualified Data.Bool as Bool (bool)
+import qualified Data.Maybe as Maybe (isNothing)
 
-import Graphics.Rendering.OpenGL hiding (Program)
-import Graphics.UI.GLUT          hiding (Program)
+data Program = Program
+    { shell  :: Maybe Shell.Shell
+    , bitmap :: Maybe BitMap.BitMap 
+    } deriving Show
 
-import Control.Concurrent.MVar
+type ProgName = String
 
-import Data.List as List
-import Data.Map  as Map
+programs :: [ProgName]
+programs = ["shell","bitmap"]
 
-import Struct.Screen as Screen
-import Struct.System as System 
-
-data Program = Program 
-    { name    :: String 
-    , display :: DisplayCallback }
-
-    -- , keyboardMouse :: KeyboardMouseCallback 
-    -- , mouse         :: MouseButton -> KeyState -> Position -> IO () 
-    -- , motion        :: Position -> IO () 
-    -- , passiveMotion :: Position -> IO ()
-
-instance Show Program where
-    show = name
-
-instance Ord Program where
-    (>=) x y = (name x) >= (name y)
-    (<=) x y = (name x) <= (name y)
-
-instance Eq Program where
-    (==) x y = (name x) == (name y)
+close :: String -> (Program -> Program)
+close str = case str of
+    "bitmap" -> \prg -> prg { bitmap = Nothing }
+    _        -> id
 

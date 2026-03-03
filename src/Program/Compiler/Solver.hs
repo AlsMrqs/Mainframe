@@ -4,7 +4,9 @@ import Engine.Math.Space
 import Compiler.Parser
 import Compiler.Lexer
 
-solve :: Expression -> Point -> Double
+type Expression = Tree Token
+
+solve :: Expression -> Point -> Double -- Point : (input variable) for a cartesian scanner
 solve tree (x,y,z) = case tree of
     Node n l r -> case (\(Token i _) -> i) n of
         "*" -> (solve l (x,y,z)) * (solve r (x,y,z))

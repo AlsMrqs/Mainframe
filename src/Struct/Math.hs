@@ -1,12 +1,15 @@
 module Struct.Math where
 import Data.Time.Clock
-import Data.Bool
+-- import Data.Bool
 import Data.List -- (uncons)
 
 type Point = (Double, Double, Double)
 
+fromIntegralPoint :: (Integral a) => (a,a,a) -> Point
 fromIntegralPoint (x,y,z) = (fromIntegral x, fromIntegral y, fromIntegral z)
-realToFracPoint   (x,y,z) = (realToFrac x, realToFrac y, realToFrac z)
+
+-- realToFracPoint :: Point -> 
+-- realToFracPoint (x,y,z) = (realToFrac x, realToFrac y, realToFrac z)
 
 getTime :: IO Double
 getTime = do
@@ -22,16 +25,23 @@ isInsideTriangle a b c p = let
     c3 = getCrossProduct (subtr a c) (subtr p c)
     result = [c1,c2,c3]
     in all (>= 0) result || all (<= 0) result
- 
+
+-- foldable : [Point] 
 isInsidePolygon :: Point -> [Point] -> Bool
 isInsidePolygon p lst = case uncons lst of
     Nothing     -> False
     Just (x,xs) -> g p x xs
 -- remake:
 g :: Point -> Point -> [Point] -> Bool
-g p k []         = False
-g p k l@(x:[])   = False
-g p k l@(x:y:xs) = isInsideTriangle k x y p || g p k (y:xs)
+g _ _ []         = False
+g _ _ (_:[])   = False
+g p k (x:y:xs) = isInsideTriangle k x y p || g p k (y:xs)
+
+    -- Just (x,xs) -> case uncons xs of
+    --     Nothing     -> False
+    --     Just (y,ys) -> foldl' (\acc c -> isInsideTriangle a b c p || acc) ys
+
+-- isInsideTriangle 
 
 -- End - Triangle Area
 
@@ -62,7 +72,7 @@ resize k (x,y,z) = let
     in (x',y',z') :: Point
 
 getModule :: Point -> Double
-getModule (x,y,z) = sqrt $ (x^2) + (y^2) + (z^2)
+getModule (x,y,z) = sqrt $ (x**2) + (y**2) + (z**2)
 
 subtr :: Point -> Point -> Point
 subtr (x0,y0,z0) (x1,y1,z1) = (x1-x0,y1-y0,z1-z0)
@@ -89,21 +99,21 @@ getAngleBetween (x,y,z) (i,j,k) =
         else acos (prod / (mod1 * mod2))
 
 getAngleX :: Point -> Double
-getAngleX (x,y,z)
+getAngleX (x,y,_)
     | x < 0  && y < 0 = (+) (pi) $ getAngleBetween (-1,0,0) (x,y,0)
     | x > 0  && y < 0 = (+) (pi) $ getAngleBetween (-1,0,0) (x,y,0)
     | x == 0 && y < 0 = (+) (pi) $ getAngleBetween (-1,0,0) (x,y,0)
     | otherwise      = getAngleBetween (1,0,0) (x,y,0)
 
 getAngleY :: Point -> Double
-getAngleY (x,y,z)
+getAngleY (_,y,z)
     | y < 0  && z < 0 = (+) (pi) $ getAngleBetween (0,-1,0) (0,y,z)
     | y > 0  && z < 0 = (+) (pi) $ getAngleBetween (0,-1,0) (0,y,z)
     | y == 0 && z < 0 = (+) (pi) $ getAngleBetween (0,-1,0) (0,y,z)
     | otherwise       = getAngleBetween (0,1,0) (0,y,z)
 
 getAngleZ :: Point -> Double
-getAngleZ (x,y,z)
+getAngleZ (x,_,z)
     | z < 0  && x < 0 = (+) (pi) $ getAngleBetween (0,0,-1) (x,0,z)
     | z > 0  && x < 0 = (+) (pi) $ getAngleBetween (0,0,-1) (x,0,z)
     | z == 0 && x < 0 = (+) (pi) $ getAngleBetween (0,0,-1) (x,0,z)

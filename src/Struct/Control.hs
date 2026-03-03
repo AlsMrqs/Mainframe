@@ -2,45 +2,22 @@ module Struct.Control where
 import Graphics.Rendering.OpenGL hiding (Program)
 import Graphics.UI.GLUT          hiding (Program)
 import Control.Concurrent.MVar
--- import Struct.Program as Program
-import Struct.Compass as Compass
-import Struct.System  as System 
-import Struct.Engine  as Engine
-import Struct.Space   as Space
-import Struct.DBMS    as DBMS
-import Struct.Math    as Math
+import Control.Concurrent
+-- import Csound.IO
+-- import Csound.Base
+import qualified Struct.BitMap as BitMap
 
-keyboardMouse :: MVar (Program) -> KeyboardMouseCallback
-keyboardMouse _root key keyState _mod pos = return () 
+mouse :: MVar (BitMap.BitMap) -> MouseCallback
+mouse _root _button _keyState _pos = do
+    (Size w h) <- get windowSize
 
-mouse :: MVar (Program) -> MouseCallback
-mouse _root button keyState pos = return () 
+    _bitmap <- takeMVar _root
+    let newBit = BitMap.setBit _bitmap _pos (Size w h)
+    putMVar _root $ BitMap.insertBit newBit _bitmap
 
-motion :: MVar (Program) -> MotionCallback
-motion _root pos = return () 
-
-passiveMotion :: MVar (Program) -> MotionCallback
-passiveMotion _root _pos = do 
-    (Size n m)         <- get windowSize
-    let (Position x y) = _pos
-    let vertice        = fromIntegral(m-y) :: Space.Coord
-        ordinat        = fromIntegral(m)   :: Space.Coord
-        horizon        = fromIntegral(x)   :: Space.Coord
-        absciss        = fromIntegral(n)   :: Space.Coord
-    --  aim :: Math.Point = (Space.Coord, Space.Coord, Space.Coord) 
-    let aim = (,,) 
-            ((+) (-1) . (*) horizon $ (/) 2.0 (absciss))
-            ((+) (-1) . (*) vertice $ (/) 2.0 (ordinat)) (0)
-
-    program    <- takeMVar _root     -- DBMS.DBMS (..)
-    let engine = System.vert program -- Compass.Compass (Screen.Interactive Math.Point)
-    let entity = System.vert engine  -- Screen.Interactive Math.Point
-    let spectr = System.vert entity  -- Screen.Element
-
-    let emotion = System.cross aim entity -- :: Screen.Interactive Math.Point
-        ansswer = case emotion of
-            Nothing -> engine             -- :: Compass.Compass (Engine.Entity)
-            Just v  -> Compass.insert v engine 
-    putMVar _root (DBMS.insert ansswer program) -- :: DBMS.DBMS (..)
-    print aim
+motion :: MVar (BitMap.BitMap) -> MotionCallback
+motion _root _pos = return ()
+    
+keyboardMouse :: MVar (BitMap.BitMap) -> KeyboardMouseCallback
+keyboardMouse _root key keyState _mod pos = return ()
 

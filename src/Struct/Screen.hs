@@ -1,50 +1,41 @@
 module Struct.Screen where
-import Graphics.Rendering.OpenGL
-import Graphics.UI.GLUT
-import Data.Bool      as Bool (bool)
-import Data.List      as List (foldl',concatMap,uncons)
-import Struct.Manager as Manager
-import Struct.System  as System 
+import Graphics.Rendering.OpenGL -- import Graphics.UI.GLUT
+import qualified Data.List as List
+import Struct.Graph   as Graph 
 import Struct.Space   as Space
-import Struct.Math    as Math
-import Struct.DBMS    as DBMS
 
 type Flipside      = GLfloat
 type RGB           = Color3
-type Interactive a = System.Graph Element a
+type Interactive a = Graph.Graph Element a
 
-data Element       = Element
-    { _RGB_ :: RGB Flipside
-    , model :: PrimitiveMode  
-    , ordin :: [(Space.Coord, Space.Coord, Space.Coord)]
-    } deriving Show
+data Element = Element
+    { model :: PrimitiveMode
+    , _RGB_ :: RGB Flipside
+    , ordin ::[Space.Point] } deriving (Show) -- , Read)
 
 instance Eq Element where
-    (==) a b = (ax,ay,az) == (bx,by,bz)
-        where
-        (ax,ay,az) = (Space.coord X a, Space.coord Y a, Space.coord Z a)
-        (bx,by,bz) = (Space.coord X b, Space.coord Y b, Space.coord Z b)
+    (==) a b = (List.sort $ ordin a) == (List.sort $ ordin b)
 
 instance Ord Element where
-    (<=) x y = case uncons (ordin x) of
+    (<=) x y = case List.uncons (ordin x) of
         Nothing     -> False
-        Just (p,ps) -> case uncons (ordin y) of
+        Just (p,ps) -> case List.uncons (ordin y) of
             Nothing     -> False
             Just (q,qs) -> let
-                (xx,xy,xz) = (Space.znear p ps) 
-                (yx,yy,yz) = (Space.znear q qs)
+                (_,_,xz) = (Space.znear p ps) 
+                (_,_,yz) = (Space.znear q qs)
                 in xz <= yz
-    (>=) x y = case uncons (ordin x) of
+    (>=) x y = case List.uncons (ordin x) of
         Nothing     -> False
-        Just (p,ps) -> case uncons (ordin y) of
+        Just (p,ps) -> case List.uncons (ordin y) of
             Nothing     -> False
             Just (q,qs) -> let
-                (xx,xy,xz) = (Space.znear p ps) 
-                (yx,yy,yz) = (Space.znear q qs)
+                (_,_,xz) = (Space.znear p ps) 
+                (_,_,yz) = (Space.znear q qs)
                 in xz >= yz
 
 instance Space.Coordinate Element where
-    coord axis (Element _ _ []    ) = 0
+    coord _    (Element _ _ []    ) = 0
     coord axis (Element _ _ (p:ps)) = 
         let (x,y,z) = Space.znear p ps 
         in case axis of 

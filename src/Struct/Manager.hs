@@ -1,12 +1,12 @@
 module Struct.Manager where
-import Struct.System as System
-import Data.List (delete)
+import Struct.Graph as Graph
+import Data.List as List (delete,elem)
 
-type Manager a = Maybe (System.Graph a Energy)
+type Manager a = Maybe (Graph.Graph a Energy)
 data Energy    = Prev | Next
 
 create :: a -> Manager a
-create x = k where k = Just $ System.Vertex x (\_ -> k)
+create x = k where k = Just $ Graph.Vertex x (\_ -> k)
 
 empty :: Manager a
 empty = fromList []
@@ -23,19 +23,19 @@ f x y = case y of
 
 fromList :: [a] -> Manager a
 fromList []     = Nothing
-fromList (x:xs) = Just fst
+fromList (x:xs) = Just fst'
     where
-        (lst,nxt) = link xs fst fst
-        fst = System.Vertex x $ \d -> case d of
+        (lst,nxt) = link xs fst' fst'
+        fst' = Graph.Vertex x $ \d -> case d of
             Prev -> Just lst
             Next -> Just nxt
 -- aux
 link :: [a] -> Graph a Energy -> Graph a Energy -> (Graph a Energy, Graph a Energy)
-link     [] fst lst = (lst,fst)
-link (x:xs) fst lst = (prv,new)
+link     [] fst' lst = (lst,fst')
+link (x:xs) fst' lst = (prv,new)
     where
-        (prv,nxt) = link xs fst new
-        new = System.Vertex x $ \d -> case d of
+        (prv,nxt) = link xs fst' new
+        new = Graph.Vertex x $ \d -> case d of
             Prev -> Just lst
             Next -> Just nxt
 
@@ -50,4 +50,14 @@ next = maybe Nothing (cross Next)
 
 prev :: Manager a -> Manager a
 prev = maybe Nothing (cross Prev)
+
+isElem :: Eq a => a -> Manager a -> Bool
+isElem x = List.elem x . toList
+
+select :: Eq a => a -> Manager a -> Manager a
+select x k 
+    | (not . isElem x) k = Nothing
+    | otherwise = if maybe False ((==) x . Graph.vert) k
+        then k
+        else (select x . maybe Nothing (Graph.cross Next)) k
 
