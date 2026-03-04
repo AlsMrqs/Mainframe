@@ -65,6 +65,11 @@ library
     other-modules: 
         Struct.Shell,
         -- Struct.Program.Shell.Callback,
+        Struct.Compiler.Solver,
+        Struct.Compiler.Lexer,
+        Struct.Compiler.Parser,
+        Struct.Compiler.Language.Grammar,
+        Struct.Compiler.Language.Dictionary,
         Struct.Program.BitMap.BitMap,
         Struct.Program.BitMap.Callback,
         Struct.System,
@@ -119,6 +124,11 @@ executable Mainframe
     other-modules: 
         Struct.Shell
         -- Struct.Program.Shell.Callback
+        Struct.Compiler.Solver
+        Struct.Compiler.Lexer
+        Struct.Compiler.Parser
+        Struct.Compiler.Language.Grammar
+        Struct.Compiler.Language.Dictionary
         Struct.Program.BitMap.BitMap
         Struct.Program.BitMap.Callback
         Struct.System

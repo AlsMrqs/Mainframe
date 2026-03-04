@@ -1,12 +1,12 @@
-module Compiler.Parser where
+module Struct.Compiler.Parser where
 
 import Data.Either
 import qualified Data.Maybe as Maybe 
 import qualified Data.List as List
 import qualified Data.Bool as Bool (bool)
 
-import Engine.Math.Space
-import qualified Compiler.Lexer as Lexer
+import Struct.Math -- .Space
+import qualified Struct.Compiler.Lexer as Lexer
 
 -- Grammar -- 
 data Tree a = Node a (Tree a) (Tree a) | Leaf a | Empty 

@@ -1,4 +1,4 @@
-module Compiler.Lexer where
+module Struct.Compiler.Lexer where
 
 import Prelude hiding (exponent, read, exp)
 import Data.Maybe (fromJust, isNothing, isJust)

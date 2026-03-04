@@ -1,9 +1,9 @@
-module Compiler.Solver where
+module Struct.Compiler.Solver where
 
-import Engine.Math.Space
-import Compiler.Parser
-import Compiler.Lexer
-import Compiler.Language.Grammar
+import Struct.Math -- .Space
+import Struct.Compiler.Parser
+import Struct.Compiler.Lexer
+import Struct.Compiler.Language.Grammar
 
 solve :: [Char] -> Point -> Either String Double
 solve str vars = fmap (flip solve' vars) (parse str)

@@ -3,6 +3,7 @@ import qualified Graphics.UI.GLUT as GLUT
 -- import qualified Struct.Program.Shell.Callback as Shell
 import qualified Struct.Shell as Shell
 import qualified Struct.Program.BitMap.Callback as BitMap
+-- import qualified Struct.Program.Magisterium.Callbak as Magisterium -- todo!!!!
 import qualified Struct.Manager as Manager
 import qualified Struct.Graph as Graph
 import qualified Data.List as List (elem)
@@ -19,12 +20,13 @@ data System = System
 data Program = Program
     -- { shell  :: Maybe Shell.Shell
     { bitmap :: Maybe BitMap.BitMap 
+    -- magisterium :: Maybe Magisterium.Magisterium -- todo!!!!
     } deriving Show
 
 type ProgName = String
 
 programs :: [ProgName]
-programs = ["shell","bitmap"]
+programs = ["bitmap"] -- "magisterium"
 
 -- System Functions
 
@@ -69,6 +71,7 @@ modifier k = case k of
 close :: String -> (Program -> Program)
 close str = case str of
     "bitmap" -> \prg -> prg { bitmap = Nothing }
+    -- "magisterium" -> \prog -> prog { magisterium = Nothing } -- todo!!!
     _        -> id
 
 startBitMap :: System -> System
@@ -83,6 +86,8 @@ shellFunction :: (Shell.Shell -> Shell.Shell) -> System -> System
 --     shellApply g prog = prog { shell = (fmap g . shell) prog }
 
 shellFunction f sys = sys { shell = (f . shell) sys }
+
+-- magisteriumFunction :: (Magisterium.Magisterium -- maybe i rename it to (Magis)
 
 bitmapFunction :: (BitMap.BitMap -> BitMap.BitMap) -> System -> System
 bitmapFunction f sys = Bool.bool sys sys' $ (Manager.isElem "bitmap" . manager) sys

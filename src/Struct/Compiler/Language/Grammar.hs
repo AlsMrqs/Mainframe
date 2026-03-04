@@ -1,13 +1,13 @@
-module Compiler.Language.Grammar where
+module Struct.Compiler.Language.Grammar where
 
 import Data.Maybe
 -- import Data.Tree
 import Data.List
 import Prelude hiding (lex)
 
-import Compiler.Language.Dictionary
-import Compiler.Lexer
-import Compiler.Parser
+import Struct.Compiler.Language.Dictionary
+import Struct.Compiler.Lexer
+import Struct.Compiler.Parser
 
 grammar = [ Production [ Terminal open
                        , Variable expression

@@ -40,6 +40,8 @@ main = do
             (Manager.fromList ["bitmap"])
             (System.Program . Just . BitMap.bitmap $ GLUT.Size 300 300)
 
+    readMVar mvar >>= putStrLn . (++) "Initializing: " . show
+
     GLUT.displayCallback       GLUT.$= (Callback.display             mvar)
     GLUT.keyboardMouseCallback GLUT.$= Just (Callback.keyboardMouse  mvar)
     GLUT.mouseCallback         GLUT.$= Just (Callback.mouse          mvar)
