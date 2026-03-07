@@ -16,6 +16,7 @@ solve' tree (x,y,z) = case tree of
         "/" -> (solve' l (x,y,z)) / (solve' r (x,y,z))
         "+" -> (solve' l (x,y,z)) + (solve' r (x,y,z))
         "-" -> (solve' l (x,y,z)) - (solve' r (x,y,z))
+        "^" -> (solve' l (x,y,z)) ** (solve' r (x,y,z)) -- fl4g{wr0ng}
     Leaf (Token i t) -> case t of
         Variable_ -> case i of
             "x" -> x

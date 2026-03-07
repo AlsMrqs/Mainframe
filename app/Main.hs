@@ -27,6 +27,7 @@ import qualified Struct.Program.BitMap.Callback as BitMap
 import qualified Struct.System as System
 import qualified Struct.Callback as Callback
 import qualified Struct.Manager as Manager
+import qualified Struct.Program.Magisterium.Magisterium as Magisterium
 
 main :: IO ()
 main = do
@@ -37,12 +38,14 @@ main = do
     mvar <- newMVar 
         $ System.System (GLUT.Size 300 300)
             Shell.newShell
-            (Manager.fromList ["bitmap"])
-            (System.Program . Just . BitMap.bitmap $ GLUT.Size 300 300)
+            (Manager.fromList ["bitmap","magisterium"])
+            $ System.Program 
+                (Just . BitMap.bitmap $ GLUT.Size 300 300)
+                (Just . Magisterium.magisterium $ Magisterium.Ground (5,5))
 
     readMVar mvar >>= putStrLn . (++) "Initializing: " . show
 
-    GLUT.displayCallback       GLUT.$= (Callback.display             mvar)
+    GLUT.displayCallback       GLUT.$= GLUT.addTimerCallback 120 (Callback.display mvar)
     GLUT.keyboardMouseCallback GLUT.$= Just (Callback.keyboardMouse  mvar)
     GLUT.mouseCallback         GLUT.$= Just (Callback.mouse          mvar)
     GLUT.motionCallback        GLUT.$= Just (Callback.motion         mvar)

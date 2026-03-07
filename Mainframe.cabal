@@ -70,6 +70,8 @@ library
         Struct.Compiler.Parser,
         Struct.Compiler.Language.Grammar,
         Struct.Compiler.Language.Dictionary,
+        Struct.Program.Magisterium.Magisterium,
+        Struct.Program.Magisterium.Callback,
         Struct.Program.BitMap.BitMap,
         Struct.Program.BitMap.Callback,
         Struct.System,
@@ -129,6 +131,8 @@ executable Mainframe
         Struct.Compiler.Parser
         Struct.Compiler.Language.Grammar
         Struct.Compiler.Language.Dictionary
+        Struct.Program.Magisterium.Magisterium
+        Struct.Program.Magisterium.Callback
         Struct.Program.BitMap.BitMap
         Struct.Program.BitMap.Callback
         Struct.System

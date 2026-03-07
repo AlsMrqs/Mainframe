@@ -3,7 +3,7 @@ import qualified Graphics.UI.GLUT as GLUT
 -- import qualified Struct.Program.Shell.Callback as Shell
 import qualified Struct.Shell as Shell
 import qualified Struct.Program.BitMap.Callback as BitMap
--- import qualified Struct.Program.Magisterium.Callbak as Magisterium -- todo!!!!
+import qualified Struct.Program.Magisterium.Callback as Magisterium -- todo!!!!
 import qualified Struct.Manager as Manager
 import qualified Struct.Graph as Graph
 import qualified Data.List as List (elem)
@@ -18,15 +18,17 @@ data System = System
     } deriving Show
 
 data Program = Program
-    -- { shell  :: Maybe Shell.Shell
-    { bitmap :: Maybe BitMap.BitMap 
-    -- magisterium :: Maybe Magisterium.Magisterium -- todo!!!!
+    { bitmap      :: Maybe BitMap.BitMap 
+    , magisterium :: Maybe Magisterium.Magisterium
     } deriving Show
+
+callMagisterium = magisterium . program
+callBitmap      = bitmap . program
 
 type ProgName = String
 
 programs :: [ProgName]
-programs = ["bitmap"] -- "magisterium"
+programs = ["bitmap","magisterium"]
 
 -- System Functions
 
@@ -70,8 +72,8 @@ modifier k = case k of
 
 close :: String -> (Program -> Program)
 close str = case str of
-    "bitmap" -> \prg -> prg { bitmap = Nothing }
-    -- "magisterium" -> \prog -> prog { magisterium = Nothing } -- todo!!!
+    "bitmap"      -> \prg -> prg { bitmap = Nothing }
+    "magisterium" -> \prg -> prg { magisterium = Nothing }
     _        -> id
 
 startBitMap :: System -> System
@@ -80,14 +82,13 @@ startBitMap sys = sys { program = (startIt . program) sys }
     startIt prog = prog { bitmap = Just ((BitMap.bitmap . size) sys) }
 
 shellFunction :: (Shell.Shell -> Shell.Shell) -> System -> System
--- shellFunction f sys = Bool.bool sys sys' $ (Manager.isElem "shell" . manager) sys
---     where
---     sys' = sys { program = (shellApply f . program) sys } 
---     shellApply g prog = prog { shell = (fmap g . shell) prog }
-
 shellFunction f sys = sys { shell = (f . shell) sys }
 
--- magisteriumFunction :: (Magisterium.Magisterium -- maybe i rename it to (Magis)
+magisteriumFunction :: (Magisterium.Magisterium -> Magisterium.Magisterium) -> System -> System
+magisteriumFunction f sys = Bool.bool sys sys' $ (Manager.isElem "magisterium" . manager) sys
+    where
+    sys' = sys { program = (magisteriumApply f . program) sys } 
+    magisteriumApply g prog = prog { magisterium = (fmap g . magisterium) prog }
 
 bitmapFunction :: (BitMap.BitMap -> BitMap.BitMap) -> System -> System
 bitmapFunction f sys = Bool.bool sys sys' $ (Manager.isElem "bitmap" . manager) sys
