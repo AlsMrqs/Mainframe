@@ -14,22 +14,30 @@ ope = ['+','-','*','/','^']
 exp = ['e','E']
 pnt = ['.'] 
 pun = ['.','(',',',')']
+opn = ['(']
+clo = [')']
 
 open      = State None_ False [Transition ['('] $ State Starter_ True []]
 close     = State None_ False [Transition [')'] $ State Finisher_ True []]
 separator = State None_ False [Transition [','] $ State Separator_ True []]
+open'     = State Starter_ True []
+close'    = State Finisher_ True []
 
 machine = State None_ False 
     [ Transition (idt) identifier
     , Transition (ope) operator
     , Transition (num) integer 
-    , Transition (pun) punctuation ]
+    -- , Transition (pun) punctuation ]
+    , Transition (opn) open' 
+    , Transition (clo) close' ]
 
 punctuation = State Punctuation_ True []
 
 preNumber     = State None_ False [ Transition (num) integer ]
 preIdentifier = State None_ False [ Transition (idt) identifier ]
 preOperator   = State None_ False [ Transition (ope) operator ]
+preOpen       = State None_ False [Transition ['('] $ State Starter_ True []]
+preClose      = State None_ False [Transition [')'] $ State Finisher_ True []]
 
 identifier  = State Variable_ True []
 operator    = State Operator_ True []

@@ -7,7 +7,7 @@ import Prelude hiding (lex)
 
 import Struct.Compiler.Language.Dictionary
 import Struct.Compiler.Lexer
-import Struct.Compiler.Parser
+import Struct.Compiler.Parser as Parser
 
 grammar = [ Production [ Terminal open
                        , Variable expression
@@ -19,7 +19,11 @@ grammar = [ Production [ Terminal open
 
 expression = 
     [ Production [Terminal preNumber, Variable expansion]
-    , Production [Terminal preIdentifier, Variable expansion] ]
+    , Production [Terminal preIdentifier, Variable expansion] -- ]
+    , Production [ Terminal preOpen 
+                 , Variable expression
+                 , Terminal preClose
+                 , Variable expansion ] ]
 
 expansion = [ Production [Terminal preOperator, Variable expression]
             , Production [] ]
@@ -53,7 +57,7 @@ parse'' str (tree,stack) = fmap fst $
         (pass str)
 
 parse :: [Char] -> Either String (Tree Token)
-parse str = parse'' str (Empty,[Variable expression])
+parse str = fmap (Parser.rise) $ parse'' str (Empty,[Variable expression])
 
 pass :: [Char] -> [Token]
 pass []  = []

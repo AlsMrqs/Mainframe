@@ -78,24 +78,68 @@ check (Lexer.Token str kind) prod1@(smbl:rest) = case smbl of
             then (False, prod1)
             else check (Lexer.Token str kind) rest
 
+allocRight :: Lexer.Token -> Tree Lexer.Token -> Maybe (Tree Lexer.Token)
+allocRight token (Node n l r) = maybe Nothing (Just . Node n l) (alloc token r)
+allocRight _     _            = Nothing
+
+allocLeft  :: Lexer.Token -> Tree Lexer.Token -> Maybe (Tree Lexer.Token)
+allocLeft token (Node n l r) = maybe Nothing (\k -> Just $ Node n k r) (alloc token l)
+allocLeft _     _            = Nothing
+
+upLeft :: Tree Lexer.Token -> Tree Lexer.Token
+upLeft (Node n l r) = l
+upLeft k            = k    
+
+rise :: Tree Lexer.Token -> Tree Lexer.Token
+rise (Node n l r) = if Lexer.tokentype n == Lexer.None_ then l else (Node n (rise l) (rise r))
+rise k            = k
+
+closed :: Tree Lexer.Token -> Bool
+closed Empty = False
+closed (Leaf _) = True
+closed (Node _ l r) = closed l && closed r
+
 alloc :: Lexer.Token -> Tree Lexer.Token -> Maybe (Tree Lexer.Token)
-alloc (Lexer.Token x kind) tree = case tree of
-    Node n l r -> case kind of
-        Lexer.Operator_ -> case r of
-            Empty -> Nothing
-            _     -> if (precedence $ Lexer.Token x kind) > (precedence n) 
-                then maybe Nothing (Just . Node n l) $ alloc (Lexer.Token x kind) r
-                else Just $ Node (Lexer.Token x kind) tree Empty
-        _         -> case l of
-            Node _ _ _ -> maybe Nothing (Just . Node n l) $ alloc (Lexer.Token x kind) r
-            Leaf _     -> maybe Nothing (Just . Node n l) $ alloc (Lexer.Token x kind) r
-            Empty      -> Nothing
-    Leaf n     -> case kind of
-        Lexer.Operator_ -> Just $ Node (Lexer.Token x kind) (Leaf n) Empty
-        _         -> Nothing
-    Empty      -> case kind of
-        Lexer.Operator_ -> Nothing
-        _         -> Just $ Leaf (Lexer.Token x kind)
+alloc token (Node n l r) = case Lexer.tokentype token of
+    Lexer.Operator_ ->  -- :: Token (..)
+        case (Lexer.tokentype n) of
+            Lexer.None_    -> Just (Node token l r)
+            Lexer.Starter_ -> allocLeft token (Node n l r)
+            _              -> case r of
+                Empty -> Nothing
+                _     -> if closed r
+                    then if (precedence token) > (precedence n) 
+                        then allocRight token (Node n l r)
+                        else Just (Node token (Node n l r) Empty)
+                    else allocRight token (Node n l r)
+    Lexer.Starter_ ->  -- :: Token (..)
+        case (Lexer.tokentype n) of
+            Lexer.Starter_  -> allocLeft token (Node n l r)
+            Lexer.None_     -> Nothing
+            _               -> allocRight token (Node n l r)
+    Lexer.Finisher_ -> -- :: Token (..)
+        case (Lexer.tokentype n) of
+            Lexer.Starter_  ->
+                case allocLeft token (Node n l r) of
+                    Nothing -> Just (Node (Lexer.Token "" Lexer.None_) (rise l) r)
+                    Just k  -> Just k
+            _               -> allocRight token (Node n l r)
+    _         ->
+        case l of
+            Node m _ _ -> case Lexer.tokentype n of
+                (Lexer.Starter_) -> allocLeft token (Node n l r)
+                _                -> allocRight token (Node n l r)
+            Leaf _     -> allocRight token (Node n l r)
+            Empty      -> allocLeft token (Node n l r) -- Nothing
+
+alloc token (Leaf n) = case Lexer.tokentype token of
+    Lexer.Operator_ -> Just (Node token (Leaf n) Empty)
+    _               -> Nothing
+alloc token Empty = case Lexer.tokentype token of
+    Lexer.Operator_ -> Nothing
+    Lexer.Starter_  -> Just (Node token Empty Empty)
+    Lexer.Finisher_ -> Nothing
+    _               -> Just (Leaf token)
 
 -- Grammar
 mathExpr :: Tree Lexer.Token -> [Char]
@@ -142,6 +186,7 @@ precedence :: Lexer.Token -> Int
 precedence (Lexer.Token x _)
     | elem x ["*","/"] = 10
     | elem x ["+","-"] = 5
+    -- | elem x ["(",")"] = 3
     | otherwise        = 0
 
 -- parser :: [Char] -> Tree Lexer.Token -> Either (Tree Lexer.Token) (Char,Lexer.Automaton)

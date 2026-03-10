@@ -44,16 +44,10 @@ display mvar = do
     GLUT.swapBuffers
     GLUT.postRedisplay Nothing
 
-altDown   = GLUT.Modifiers GLUT.Up GLUT.Up GLUT.Down
-altUp     = GLUT.Modifiers GLUT.Up GLUT.Up GLUT.Up
--- shiftDown = GLUT.Modifiers GLUT.Down GLUT.Up GLUT.Up
--- shiftUp   = GLUT.Modifiers GLUT.Up GLUT.Up GLUT.Up
-
 keyboardMouse :: MVar.MVar (System.System) -> GLUT.KeyboardMouseCallback
 keyboardMouse mvar _key _keyState _mod _pos = do
     case (_mod) of
         (GLUT.Modifiers GLUT.Up GLUT.Up GLUT.Down) -> do
-
 
             putStrLn "alt down!"
 

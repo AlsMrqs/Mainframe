@@ -17,7 +17,10 @@ data Type = Starter_
     deriving (Show, Eq)
 
 data Token = Token [Char] Type 
-    deriving Show
+    -- deriving Show
+
+instance Show Token where
+    show (Token str kind) = "Token '" ++ str ++ "' " ++ (show kind)
 
 data State a = State Type Bool a 
     deriving Show
@@ -35,6 +38,9 @@ tokentype (Token _ x) = x
 
 typeof :: Automaton -> Type
 typeof (State x _ _) = x
+
+content :: Token -> [Char]
+content (Token x _) = x
 
 alphabet :: Transition -> [Char]
 alphabet (Transition x _) = x
