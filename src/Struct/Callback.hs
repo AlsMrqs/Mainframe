@@ -13,20 +13,16 @@ import qualified System.Process as Process
 import qualified Struct.Math as Math
 import qualified Data.List as List
 
-terminalOutput :: MVar.MVar System.System -> IO ()
-terminalOutput mvar = do
+systemStatus :: MVar.MVar System.System -> IO ()
+systemStatus mvar = do
     Process.system "clear"
     print . System.shell   =<< MVar.readMVar mvar
     print . System.manager =<< MVar.readMVar mvar
-    -- print . System.program =<< MVar.readMVar mvar
     putStrLn . (++) "Time: " . show =<< Math.getTime
 
 display :: MVar.MVar (System.System) -> GLUT.DisplayCallback
 display mvar = do
-
-    terminalOutput mvar
-
-    sys <- MVar.readMVar mvar
+    sys <- (systemStatus mvar >> MVar.readMVar mvar)
     case System.currentProgram sys of
 
         "bitmap"      -> do
@@ -45,11 +41,9 @@ display mvar = do
     GLUT.postRedisplay Nothing
 
 keyboardMouse :: MVar.MVar (System.System) -> GLUT.KeyboardMouseCallback
-keyboardMouse mvar _key _keyState _mod _pos = do
-    case (_mod) of
+keyboardMouse mvar _key _keyState modifiers _pos = do
+    case (modifiers) of
         (GLUT.Modifiers GLUT.Up GLUT.Up GLUT.Down) -> do
-
-            putStrLn "alt down!"
 
             case (_key, _keyState) of
                 (GLUT.Char k, GLUT.Down) -> do
@@ -57,70 +51,43 @@ keyboardMouse mvar _key _keyState _mod _pos = do
                 _                        -> return ()
 
         (GLUT.Modifiers (GLUT.Up) (GLUT.Up) (GLUT.Up)) -> do
-            putStrLn "alt up!"
 
-            terminalOutput mvar
+            systemStatus mvar
 
             case (_key, _keyState) of
-
                 (GLUT.Char k, GLUT.Down) -> do
-                    -- let updateShell = System.shellFunction (Shell.insertInbox k)
-                    -- MVar.modifyMVar_ mvar (return . updateShell)
                     MVar.modifyMVar_ mvar (return . System.shellFunction (Shell.insertInbox k))
-                    -- print =<< MVar.readMVar mvar
-
                     case k of
                         '\r' -> do
                             sys <- MVar.readMVar mvar
-                            if System.currentProgram sys == "magisterium"
-                                then do
-                                    let expre = maybe [] fst $ (List.uncons . Shell.history . System.shell) sys
-                                    case System.callMagisterium sys of
-                                        Nothing -> return ()
-                                        Just _magis -> do
-                                            let _player = MagisteriumCallback.player1 _magis
-                                                _newPlayer = MagisteriumCallback.setExpression expre _player
-                                                _newMagis = MagisteriumCallback.setPlayer1 _newPlayer _magis
-                                            MVar.modifyMVar_ mvar (return . System.magisteriumFunction (\_ -> _newMagis))
-                                            return ()
-                                    return ()
-                                else return ()
-                             
+                            if System.currentProgram sys /= "magisterium" then return ()
+                            else case System.callMagisterium sys of
+                                Nothing     -> return ()
+                                Just _magis -> do
+                                    let expre     = (Shell.lastInput . System.shell) sys
+                                        _newMagis = MagisteriumCallback.insertExpression expre _magis
+                                    MVar.modifyMVar_ mvar (return . System.magisteriumFunction (const _newMagis))
                         _    -> return ()
-
                 _                        -> return ()
-
         _ -> return ()
-
     
-    case (_mod,_key,_keyState) of
+    case (modifiers,_key,_keyState) of
         (GLUT.Modifiers (GLUT.Down) (GLUT.Up) (GLUT.Up), GLUT.Char k, GLUT.Down) -> do
-            putStrLn "Shift Down"
 
-            terminalOutput mvar
+            systemStatus mvar
 
-            -- let updateShell = System.shellFunction (Shell.insertInbox k)
-            -- MVar.modifyMVar_ mvar (return . updateShell)
             MVar.modifyMVar_ mvar (return . System.shellFunction (Shell.insertInbox k))
-            -- print =<< MVar.readMVar mvar
 
             case k of
                 '\r' -> do
                     sys <- MVar.readMVar mvar
-                    if System.currentProgram sys == "magisterium"
-                        then do
-                            let expre = maybe [] fst $ (List.uncons . Shell.history . System.shell) sys
-                            case System.callMagisterium sys of
-                                Nothing -> return ()
-                                Just _magis -> do
-                                    let _player = MagisteriumCallback.player1 _magis
-                                        _newPlayer = MagisteriumCallback.setExpression expre _player
-                                        _newMagis = MagisteriumCallback.setPlayer1 _newPlayer _magis
-                                    MVar.modifyMVar_ mvar (return . System.magisteriumFunction (\_ -> _newMagis))
-                                    return ()
-                            return ()
-                        else return ()
-                     
+                    if System.currentProgram sys /= "magisterium" then return ()
+                    else case System.callMagisterium sys of
+                        Nothing     -> return ()
+                        Just _magis -> do
+                            let expre     = (Shell.lastInput . System.shell) sys
+                                _newMagis = MagisteriumCallback.insertExpression expre _magis
+                            MVar.modifyMVar_ mvar (return . System.magisteriumFunction (const _newMagis))
                 _    -> return ()
         _ -> return ()
 

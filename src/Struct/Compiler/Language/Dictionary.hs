@@ -23,15 +23,31 @@ separator = State None_ False [Transition [','] $ State Separator_ True []]
 open'     = State Starter_ True []
 close'    = State Finisher_ True []
 
-machine = State None_ False 
+machine = State None_ False $
     [ Transition (idt) identifier
     , Transition (ope) operator
     , Transition (num) integer 
     -- , Transition (pun) punctuation ]
     , Transition (opn) open' 
-    , Transition (clo) close' ]
+    , Transition (clo) close' ] ++ (transitions preTrigonoFunct)
 
 punctuation = State Punctuation_ True []
+
+-- todo :: Add (sin,cos,tan) to math 
+
+preTrigonoFunct = State None_ False 
+    [ Transition ['c'] preCos 
+    , Transition ['s'] preSin
+    , Transition ['t'] preTan ]
+
+preCos = State None_ False [ Transition ['o'] halfCos ]
+halfCos = State None_ False [ Transition ['s'] $ State Funct_ True []]
+
+preSin = State None_ False [ Transition ['i'] halfSin ]
+halfSin = State None_ False [ Transition ['n'] $ State Funct_ True []]
+
+preTan = State None_ False [ Transition ['a'] halfTan ]
+halfTan = State None_ False [ Transition ['n'] $ State Funct_ True []]
 
 preNumber     = State None_ False [ Transition (num) integer ]
 preIdentifier = State None_ False [ Transition (idt) identifier ]

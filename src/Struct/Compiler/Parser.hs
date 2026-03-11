@@ -99,6 +99,8 @@ closed Empty = False
 closed (Leaf _) = True
 closed (Node _ l r) = closed l && closed r
 
+-- todo :: Add (sin,cos,tan :: Token _ Funct_) to (Tree Lexer.Token)
+
 alloc :: Lexer.Token -> Tree Lexer.Token -> Maybe (Tree Lexer.Token)
 alloc token (Node n l r) = case Lexer.tokentype token of
     Lexer.Operator_ ->  -- :: Token (..)

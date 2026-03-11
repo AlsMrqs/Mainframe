@@ -1,5 +1,5 @@
 module Struct.Shell where
-import qualified Data.List as List (init, intercalate, reverse)
+import qualified Data.List as List (init, intercalate, reverse, uncons)
 import qualified GHC.Int as GHC.Int
 
 data ShellSize = ShellSize
@@ -43,4 +43,7 @@ updateHistory shell = shell { history = newHistory }
     newHistory = if null (inbox shell) 
         then (history shell)
         else (inbox shell) : (history shell)
+
+lastInput :: Shell -> String
+lastInput = maybe [] fst . (List.uncons . history)
 

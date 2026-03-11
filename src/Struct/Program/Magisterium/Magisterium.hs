@@ -22,9 +22,6 @@ setExpression str player = player { expression = str }
 data Position = Atack | Denfense
     deriving Show
 
--- data Projectile = Projectile 
---     { path :: Double -> Double }
-
 data Magisterium = Magisterium
     { ground   :: Ground
     , progress :: Double
@@ -34,6 +31,13 @@ data Magisterium = Magisterium
 
 setPlayer1 :: Player -> Magisterium -> Magisterium
 setPlayer1 player magis = magis { player1 = player }
+
+insertExpression :: String -> Magisterium -> Magisterium
+insertExpression expr magis = _newMagis
+    where
+    _player    = player1 magis
+    _newPlayer = setExpression expr _player
+    _newMagis  = setPlayer1 _newPlayer magis
 
 -- round Manger --
 -- getExpression :: String -> Player -> Player
@@ -64,7 +68,7 @@ plot str = either (const $ newElem []) (flip drawExpression (-1,1)) (Grammar.par
 
 drawExpression :: Parser.Tree Lexer.Token -> (Double,Double) -> Screen.Element
 drawExpression tree (x0,x) = mold 
-    $ map (\k -> (k,Solver.solve' tree (k,0,0),0)) [x0,x0+(0.01)..x]
+    $ map (\k -> (k,Solver.solve' tree (k,0,0),0)) [x0,x0+(0.005)..x] -- todo (Lines)!!!!
     where
     mold = Screen.Element (OpenGL.Points) (OpenGL.Color3 0.1 0.1 0.1) 
 

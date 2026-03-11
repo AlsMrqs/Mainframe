@@ -14,6 +14,7 @@ data Type = Starter_
           | Integer_ 
           | Double_ 
           | None_ 
+          | Funct_
     deriving (Show, Eq)
 
 data Token = Token [Char] Type 
