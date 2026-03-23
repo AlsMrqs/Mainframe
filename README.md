@@ -1,28 +1,22 @@
 # Mainframe
 ## Mainframe is a software for teaching physics and mathematics through gamification
 
-### Function - lexer
-Receives a string and splits it into tokens recognized by the language.
+### Functions
 
 ```haskell
-lexer :: [Char] -> ([Char], [Char])
-lexer "x+1" = ("x","+1")
-lexer  "+1" = ("+","1")
-lexer   "1" = ("1","")
-lexer "@naturefx" = ("","@naturefx")
-```
+lex :: [Char] -> (Token,[Char])
 
-### Function - parser
-Receives an expression and checks whether it is syntatically correct.
+parse :: [Char] -> Either String (Tree Token)
 
-```haskell
-parser :: [Char] -> Either Error Bool
-parser "(x+1,y^2,z-2)" = Right True
-parser "(abcde)" = Left "Error msg"
+type Point = (Double,Double,Double) -- (x,y,z) cartesian axis
+
+solve' :: Tree Token -> Point -> Double
 ```
 
 ### Developing
-- Implementing the syntax tree structure
-- Adding semantic analysis
-- Building a REPL interface for testing expressions
+- todo: insert (sin,cos,tan) fu
+- Gameplay (projectile and analysis)
+- Animation (cartesian results)
+
+The parser will be rebuilt in the 'folklore' repository!
 
