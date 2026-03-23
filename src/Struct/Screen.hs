@@ -13,6 +13,18 @@ data Element = Element
     , _RGB_ :: RGB Flipside
     , ordin ::[Space.Point] } deriving (Show) -- , Read)
 
+pointsToElement :: RGB Flipside -> [Space.Point] -> Element
+pointsToElement = Element Points 
+
+linesToElement :: RGB Flipside -> [Space.Point] -> Element
+linesToElement = Element Lines
+
+append :: Space.Point -> Element -> Element
+append sp (Element m r o) = Element m r (sp:o)
+
+updateOrdin :: [Space.Point] -> Element -> Element
+updateOrdin sp el = el { ordin = sp }
+
 instance Eq Element where
     (==) a b = (List.sort $ ordin a) == (List.sort $ ordin b)
 

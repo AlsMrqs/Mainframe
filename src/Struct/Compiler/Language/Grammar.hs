@@ -53,7 +53,7 @@ parse' token (tree,stack) =
 parse'' :: [Char] -> (Tree Token,[Symbol]) -> Either String (Tree Token)
 parse'' str (tree,stack) = fmap fst $
     foldl (\acc token -> either Left (parse' token) acc) 
-        (Right (tree,stack)) 
+        (Right (tree,stack))
         (pass str)
 
 parse :: [Char] -> Either String (Tree Token)

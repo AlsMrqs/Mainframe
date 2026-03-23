@@ -7,6 +7,9 @@ data Graph a k = Vertex
     { vert :: a 
     , edge :: k -> Maybe (Graph a k) }
 
+-- :: Graph a k -> Graph b k # (a -> b) (k -> (a -> b)) -- fmap
+-- :: Graph a k -> Graph a g # (g -> k)
+
 instance (Show a) => Show (Graph a k) where
     show = (++) "Vertex " . show . vert
 

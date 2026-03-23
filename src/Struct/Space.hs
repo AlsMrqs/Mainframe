@@ -4,6 +4,7 @@ module Struct.Space where
 import qualified System.Random as Random
 import qualified Data.Bool as Bool (bool)
 import qualified Data.List as List (foldl1', foldl')
+import qualified Struct.Math as Math
  
 type Point = (Coord, Coord, Coord)
 type Coord = Double
@@ -13,6 +14,13 @@ data Axis = X | Y | Z
 
 point :: Coordinate a => a -> Point
 point k = (,,) (coord X k) (coord Y k) (coord Z k)
+
+flatLine :: Point -> Double -> Double -> [Point]
+flatLine (x,y,_) size angle = map (Math.sumPoint (x,y,0) . flip Math.rotateZ angle) 
+    [left,right]
+    where
+    right = Math.subtr (x+size,y,0) (x,y,0)
+    left = Math.subtr (x-size,y,0) (x,y,0)
 
 -- ??
 overlap :: Coordinate a => Axis -> a -> [Point] -> Bool

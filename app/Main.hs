@@ -6,7 +6,7 @@ import qualified Graphics.UI.GLUT as GLUT hiding (Text,bitmap,Program)
 -- import qualified System.Random as Random
 import Control.Concurrent.MVar
 import Control.Concurrent
--- import qualified Struct.Math     as Math
+import qualified Struct.Math     as Math
 -- import Struct.Triangle as Triangle
 -- import Struct.Space    as Space
 -- import Struct.Cube     as Cube
@@ -28,6 +28,7 @@ import qualified Struct.System as System
 import qualified Struct.Callback as Callback
 import qualified Struct.Manager as Manager
 import qualified Struct.Program.Magisterium.Magisterium as Magisterium
+import qualified Control.Monad.State as State
 
 main :: IO ()
 main = do
@@ -35,13 +36,16 @@ main = do
     GLUT.initialWindowSize GLUT.$= GLUT.Size 300 300
     _window      <- GLUT.createWindow progName
 
+    time <- Math.getTime
+
     mvar <- newMVar 
         $ System.System (GLUT.Size 300 300)
             Shell.newShell
-            (Manager.fromList ["bitmap","magisterium"])
+            (Manager.fromList ["derivative"]) -- ["bitmap","derivative"])
             $ System.Program 
-                (Just . BitMap.bitmap $ GLUT.Size 300 300)
-                (Just . Magisterium.magisterium $ Magisterium.Ground (5,5))
+                Nothing
+                -- (Just . BitMap.bitmap $ GLUT.Size 300 300)
+                (Just $ Magisterium.test)
 
     readMVar mvar >>= putStrLn . (++) "Initializing: " . show
 
