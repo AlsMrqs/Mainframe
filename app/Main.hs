@@ -41,11 +41,13 @@ main = do
     mvar <- newMVar 
         $ System.System (GLUT.Size 300 300)
             Shell.newShell
-            (Manager.fromList ["derivative"]) -- ["bitmap","derivative"])
+            [] -- system messag
+            (Manager.fromList ["bitmap","derivative"])
             $ System.Program 
-                Nothing
-                -- (Just . BitMap.bitmap $ GLUT.Size 300 300)
-                (Just $ Magisterium.test)
+                (Just . BitMap.bitmap $ GLUT.Size 300 300)
+                (Just $ Magisterium.test time)
+
+    forkIO (Callback.gameTimer mvar)
 
     readMVar mvar >>= putStrLn . (++) "Initializing: " . show
 

@@ -13,9 +13,13 @@ import qualified Data.Maybe as Maybe (isNothing)
 data System = System 
     { size    :: GLUT.Size
     , shell   :: Shell.Shell
+    , message :: String
     , manager :: (Manager.Manager String) 
     , program :: Program 
     } deriving Show
+
+insertMessage :: String -> System -> System
+insertMessage str sys = sys { message = str }
 
 data Program = Program
     { bitmap      :: Maybe BitMap.BitMap 

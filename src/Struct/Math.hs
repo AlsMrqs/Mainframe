@@ -15,7 +15,7 @@ getTime :: IO Double
 getTime = do
     curretTime <- getCurrentTime
     return
-        . (/1e11) . fromIntegral
+        . (/1e9) . fromIntegral
         . diffTimeToPicoseconds $ utctDayTime curretTime
 
 isInsideTriangle :: Point -> Point -> Point -> Point -> Bool
