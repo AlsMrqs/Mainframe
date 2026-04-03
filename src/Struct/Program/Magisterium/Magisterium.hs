@@ -23,10 +23,10 @@ type Trail = [Space.Point]
 type Time = Double
 
 toSecond :: Time -> Time
-toSecond = flip (/) 1e3 -- wtf
+toSecond = flip (/) 1e3
 
 trace :: Function -> Time -> Time -> Maybe Trail
-trace f t0 t = Bool.bool (return newStack) Nothing (dt >= 2)
+trace f t0 t = Bool.bool (return newStack) Nothing (dt > 2)
     where
     dt       = (t/100)-(t0/100)
     step     = negate 0.001
@@ -43,6 +43,11 @@ derive func = Function f'
     f  = apply func
     f' x = let h = 0.000001 in (f (x+h) - f x) / h
 
+intersect :: Function -> Function
+intersect f = Function p'
+    where
+    p' x = negate ((/) 1 (apply (derive f) x))
+
 tangent :: Double -> Function -> Function
 tangent x0 f = Function $ \x -> m*(x - x0) + y0
     where
@@ -58,10 +63,17 @@ perpendicular x0 f = Function $ \x -> (negate(1/m))*(x - x0) + y0
 range :: [Double]
 range = [-1,-1+1e-2..1]
 
-isPerpendicular :: Double -> Function -> Function -> Bool
-isPerpendicular x0 f g = fs == gs
+-- isPerpendicular :: Double -> Function -> Function -> Bool
+-- isPerpendicular x0 f g = fs == gs
+--     where
+--     fs = map (round . (*) 1e4 . apply (perpendicular x0 f)) range
+--     gs = map (round . (*) 1e4 . apply g) range
+
+isPerpendicular :: Function -> Function -> Bool
+isPerpendicular f g = fs == gs
     where
-    fs = map (round . (*) 1e4 . apply (perpendicular x0 f)) range
+    -- fs = map (round . (*) 1e4 . apply (derive f)) range
+    fs = map (round . (*) 1e4 . \x -> (-1) / apply f x) range
     gs = map (round . (*) 1e4 . apply g) range
 
 isDerivative :: Function -> Function -> Bool
@@ -70,11 +82,14 @@ isDerivative f g = f' == g'
     f' = map (round . (*) 1e4 . apply (derive f)) range
     g' = map (round . (*) 1e4 . apply g) range
 
-aim :: Function -> Double -> [Space.Point]
-aim f x = map (Math.sumPoint (x, apply f x,0) .  flip Math.rotateZ alpha) 
-    $ lxUp ++ lxDown ++ lyUp ++ lyDown
+follow :: Function -> Double -> [Space.Point]
+follow f x = map (Math.sumPoint (x, apply f x,0) .  flip Math.rotateZ alpha) aim
     where
     alpha = atan (apply (derive f) x)
+
+aim :: [Space.Point]
+aim = lxUp ++ lxDown ++ lyUp ++ lyDown
+    where
     lxUp   = [(-0.05, 0.05,0),(-0.01, 0.05,0)] ++ [(0.05, 0.05,0),(0.01, 0.05,0)]
     lxDown = [(-0.05,-0.05,0),(-0.01,-0.05,0)] ++ [(0.05,-0.05,0),(0.01,-0.05,0)]
     lyUp   = [(-0.05, 0.05,0),(-0.05, 0.01,0)] ++ [(0.05, 0.05,0),(0.05, 0.01,0)]
@@ -134,6 +149,10 @@ tuplePosition pos = (,) (x pos) (y pos)
 data Order = A Offensive Defensive | B Defensive Offensive
     deriving Show
 
+flipOrder :: Order -> Order
+flipOrder (A off def) = B def off
+flipOrder (B def off) = A off def
+
 offensive :: Order -> Offensive
 offensive order = case order of
     A off _ -> off
@@ -167,6 +186,11 @@ data Game = Game
 changeTime :: Time -> Game -> Game
 changeTime t0 game = game { time = t0 }
 
+isWaiting :: Game -> Bool
+isWaiting game = case status game of
+    Waiting _ -> True
+    _         -> False
+
 instance Show Game where
     show (Game s t r or p1 p2) = "Game \n"
         ++ (show s) ++ "\n"
@@ -199,22 +223,14 @@ defensivePlayer game = case order game of
 
 --------------------{ GameRunTime }-----------------------
 
--- start :: Time -> Input -> StateComputation -- True (Main)
--- start t0 str = do
---     case Grammar.parse str of
---         Left  msg  -> State.lift (Left msg)
---         Right tree -> do
---             let f x = Solver.solve' tree (x,0,0)
---             State.get >>= State.put . play t0 (Function f)
---             return "Sucess!"
-
 nextRound :: Time -> Game -> Game
 nextRound t0 game = case status game of
     InsertPositionP1 -> changeTime t0 $ game { status = InsertPositionP2 }
     InsertPositionP2 -> changeTime t0 $ game { status = Launch }
     Launch           -> changeTime t0 $ game { status = Track }
     Track            -> game { status = Block }
-    Block            -> changeTime t0 $ game { status = InsertPositionP1 }
+    Block            -> changeTime t0 $ game { status = Waiting NewGame }
+    Waiting NewGame  -> changeTime t0 $ game { status = InsertPositionP1 }
 
 selectRound :: Status -> Game -> Game
 selectRound newStatus game = game { status = newStatus }
@@ -224,29 +240,30 @@ type Error = String
 type Message = String
 type StateComputation = State.StateT Game (Either Error) Message
 
--- play :: Time -> String -> Game -> Either Error (String,Game)
 play :: Time -> String -> Game -> Either Error (String,Game)
 play t str game = case status game of
     InsertPositionP1 -> readPoint str    
         >>= pure . fmap (nextRound t) . flip insertPositionP1 game
     InsertPositionP2 -> readPoint str    
         >>= fmap (fmap (nextRound t)) . flip insertPositionP2 game
-    Launch           -> readFunction str 
-        >>= fmap (fmap (nextRound t)) . flip (launch t) game
-    Track            -> readFunction str  -- todo Block
-        -- >>= fmap (fmap (nextRound t)) . flip track game
-        >>= fmap (fmap (newGame t)) . flip track game
-    -- loop
+    Launch -> readFunction str >>= fmap (fmap (nextRound t)) . flip (launch t) game
+    Track  -> readFunction str >>= fmap (fmap (nextRound t)) . flip track game
+    Block  -> readFunction str >>= fmap (fmap (nextRound t)) . flip block game
+
+    -- todo | animation - start newGame
+    Waiting NewGame -> if str == "continue"
+        then pure . (,) "NewGame Starting!" 
+            $ nextRound t game -- { order = flipOrder (order game) }
+        else Left "Type \"continue\" to start a new game!"
     _                -> pure (str,game)
-    -- Block            ->
 
 ---------------------{ Player Positioning }---------------------todo!!!!!!
 launch :: Time -> Function -> Game -> Either Error (String,Game)
 launch t0 f game = 
     let (xOff,yOff) = (tuplePosition . position . offensivePlayer) game
         (xDef,yDef) = (tuplePosition . position . defensivePlayer) game
-        origin      = apply f xOff == yOff
-        hit         = apply f xDef == yDef
+        origin      = abs ((apply f xOff) - yOff) < 1e-9
+        hit         = abs ((apply f xDef) - yDef) < 1e-9
         newOrder    = (insertOffensive t0 f . order) game
     in if not hit || not origin
         then Left "Invalid projectile!"
@@ -264,6 +281,17 @@ track f game =
                 then Left "Untracked projectile!"
                 else pure . (,) "Projectile Tracked!" $ game { order = newOrder }
 
+block :: Function -> Game -> Either Error (String,Game)
+block f game =
+    let tracker = (analysis . defensive . order) game
+    in case tracker of
+        Nothing -> pure . (,) "Can't block without track object!"
+            $ selectRound Track game
+        Just f' -> 
+            if (not . isPerpendicular f') f
+                then Left "Not blocked!"
+                else pure . (,) "Projectile Blocked!" $ game
+            
 ---------------------------------------------------------------
 
 readFunction :: Input -> Either Error Function 
@@ -298,7 +326,7 @@ insertPositionP2 pos game = if sameSideYAxis xP1 xP2
 sameSideYAxis :: Double -> Double -> Bool
 sameSideYAxis x1 x2 = (==) (x1 / abs x1) (x2 / abs x2)
 
---------------------{ Time System }--------------------(seconds)
+--------------------{ Time System }--------------------
 timeOver :: Time -> Game -> Maybe (Message,Game)
 timeOver t game = do
     case status game of
@@ -341,7 +369,6 @@ insertRandomPositionP2 t game = nextRound t $ game { player2 = newPlayer }
 
 newGame :: Time -> Game -> Game
 newGame t game = changeTime t $ game { status = InsertPositionP1 }
-------------------------------------------------
 
 generateRandomPosition :: IO Position
 generateRandomPosition = do
@@ -354,4 +381,3 @@ generateRandomPosition = do
 newRandom :: IO Integer
 newRandom = Random.newStdGen >>= return . fst . Random.randomR (-100,100)
 
---------------------------------------------------------

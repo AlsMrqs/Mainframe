@@ -11,7 +11,7 @@ type Interactive a = Graph.Graph Element a
 data Element = Element
     { model :: PrimitiveMode
     , _RGB_ :: RGB Flipside
-    , ordin ::[Space.Point] } deriving (Show) -- , Read)
+    , ordin :: [Space.Point] } deriving (Show) -- , Read)
 
 pointsToElement :: RGB Flipside -> [Space.Point] -> Element
 pointsToElement = Element Points 

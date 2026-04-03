@@ -41,7 +41,7 @@ main = do
     mvar <- newMVar 
         $ System.System (GLUT.Size 300 300)
             Shell.newShell
-            [] -- system messag
+            []
             (Manager.fromList ["bitmap","derivative"])
             $ System.Program 
                 (Just . BitMap.bitmap $ GLUT.Size 300 300)

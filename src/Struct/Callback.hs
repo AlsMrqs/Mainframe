@@ -35,27 +35,24 @@ systemStatus mvar = do
 
 gameTimer :: MVar.MVar (System.System) -> GLUT.DisplayCallback
 gameTimer mvar = do
+    systemStatus mvar
     sys <- MVar.readMVar mvar
     if System.currentProgram sys /= "derivative" then return ()
-        else do
-            currentTime <- Math.getTime
-            case System.callDerivative sys of
-                Nothing -> return ()
-                Just game -> do
-                    case MagisteriumCallback.timeOver currentTime game of
-                        Nothing            -> do
-                            systemStatus mvar
-                            putStrLn "Nothing!"
-                        Just (msg,newGame) -> do
-                            systemStatus mvar
-                            putStrLn msg
-                            MVar.modifyMVar_ mvar (return . System.derivativeFunction (const newGame))
+    else do
+        currentTime <- Math.getTime
+        case System.callDerivative sys >>= MagisteriumCallback.timeOver currentTime of
+            Nothing            -> return ()
+            Just (msg,newGame) -> do
+                putStrLn msg
+                MVar.modifyMVar_ mvar 
+                    (return . System.derivativeFunction (const newGame))
     Concurrent.threadDelay 100000
     gameTimer mvar
 
 -----------------------------{ Output }-----------------------------
 display :: MVar.MVar (System.System) -> GLUT.DisplayCallback
 display mvar = do
+    GLUT.clear [GLUT.ColorBuffer]
     -- sys <- (systemStatus mvar >> MVar.readMVar mvar)
     sys <- MVar.readMVar mvar
     case System.currentProgram sys of
@@ -66,6 +63,12 @@ display mvar = do
             maybe (putStrLn offline) display' (System.callBitmap sys)
 
         "derivative"  -> do
+            case (MagisteriumCallback.readFunction . Shell.lastInput . System.shell) sys of
+                Left msg -> return ()
+                Right f  -> maybe (pure ()) 
+                    (MagisteriumCallback.renderPoints 
+                        (MagisteriumCallback.newRGB 0.1 0.1 0.1))
+                        (MagisteriumCallback.trace f (0) (200))
             let display' = MagisteriumCallback.display
                 offline  = "Derivative offline!"
             maybe (putStrLn offline) display' (System.callDerivative sys)
@@ -102,7 +105,7 @@ altUpAction t key keyState system = case (key, keyState) of
 runGameInput :: Time -> System.System -> System.System
 runGameInput t system = 
     let input = (Shell.lastInput . System.shell) system in
-    case System.callDerivative  system of
+    case System.callDerivative system of
         Nothing   -> system
         Just game -> do
             case MagisteriumCallback.play t input game of
