@@ -32,6 +32,14 @@ trace f t0 t = Bool.bool (return newStack) Nothing (dt > 2)
     step     = negate 0.001
     newStack = foldl (flip (allocTrail f)) [] [1,1+step..1+(negate dt)]
 
+trace' :: Function -> Time -> Time -> Maybe Trail
+trace' f t0 t = Bool.bool (return newStack) Nothing ((dt*dx) > 2)
+    where
+    dt       = t-t0
+    dx       = 2 / 60e3
+    step     = negate 0.001
+    newStack = foldl (flip (allocTrail f)) [] [1,1+step..(-) 1 (dx*dt)]
+
 allocTrail :: Function -> Time -> Trail -> Trail
 allocTrail f t stack = (point:stack)
     where
@@ -249,12 +257,10 @@ play t str game = case status game of
     Launch -> readFunction str >>= fmap (fmap (nextRound t)) . flip (launch t) game
     Track  -> readFunction str >>= fmap (fmap (nextRound t)) . flip track game
     Block  -> readFunction str >>= fmap (fmap (nextRound t)) . flip block game
-
-    -- todo | animation - start newGame
-    Waiting NewGame -> if str == "continue"
-        then pure . (,) "NewGame Starting!" 
-            $ nextRound t game -- { order = flipOrder (order game) }
-        else Left "Type \"continue\" to start a new game!"
+    Waiting NewGame -> 
+        if str == "continue"
+            then pure . (,) "NewGame Starting!" $ nextRound t game
+            else Left "Type \"continue\" to start a new game!"
     _                -> pure (str,game)
 
 ---------------------{ Player Positioning }---------------------todo!!!!!!

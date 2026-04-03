@@ -30,6 +30,11 @@ import qualified Struct.Manager as Manager
 import qualified Struct.Program.Magisterium.Magisterium as Magisterium
 import qualified Control.Monad.State as State
 
+-- todo:
+-- [+] - Random Position
+-- [+] - Player vs Com
+-- [+] - Point System
+
 main :: IO ()
 main = do
     (progName,_) <- GLUT.getArgsAndInitialize

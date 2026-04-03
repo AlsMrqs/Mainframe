@@ -37,7 +37,7 @@ gameObjects game =
 display :: Magisterium.Game -> GLUT.DisplayCallback
 display game = do
     displayAim game
-    displayTrail game -- : todo it with invalid functions too!!!!!
+    displayTrail game
     case status game of
         InsertPositionP1 -> return ()
         InsertPositionP2 -> displayPositionP1 game
@@ -53,7 +53,7 @@ displayTrail game = do
     case (projectile . offensive . order) game of
         Nothing     -> return ()
         Just (_,f) -> maybe (pure ()) (renderPoints (newRGB 0.3 0.3 0.3))
-            (Magisterium.trace f (0) (200)) -- : todo (fix time)!!!!
+            (Magisterium.trace f (0) (200))
     return ()
 
 displayAim :: Magisterium.Game -> GLUT.DisplayCallback
@@ -68,16 +68,18 @@ displayAim game = do
             Block -> do
                 case (projectile . offensive . order) game of
                     Nothing     -> lock (0,0)
-                    Just (t0,f) ->  -- solve time at displayTrack
-                        let dt = (-) 1 $ (t/10000) - (t0/10000)
-                        in follow f dt
+                    Just (t0,f) ->
+                        let dt = t - t0
+                            dx = 2 / 60e3
+                        in follow f $ (-) 1 (dx*dt)
             Waiting _ -> do
                 case (projectile . offensive . order) game of
                     Nothing     -> lock (0,0)
-                    Just (t0,f) ->  -- solve time at displayTrack
+                    Just (t0,f) ->
                         let t' = Magisterium.time game 
-                            dt = (-) 1 $ (t'/10000) - (t0/10000)
-                        in follow f dt
+                            dt = t' - t0
+                            dx = 2 / 60e3
+                        in follow f $ (-) 1 (dx*dt)
     renderLines (newRGB 1 1 0) location
 
 displayPositionP1 :: Magisterium.Game -> GLUT.DisplayCallback
@@ -97,8 +99,7 @@ displayOffensive game = do
         Nothing     -> return ()
         Just (t0,f) -> do
             let t' = if Magisterium.isWaiting game then Magisterium.time game else t
-            maybe (pure ()) (renderPoints (newRGB 0 1 0))
-                (Magisterium.trace f (t0/100) (t'/100)) -- : todo (fix time)!!!!
+            maybe (pure ()) (renderPoints (newRGB 0 1 0)) (Magisterium.trace' f t0 t')
     return ()
 
 displayTrack :: Magisterium.Game -> GLUT.DisplayCallback
@@ -111,8 +112,9 @@ displayTrack game = do
                 Nothing -> return ()
                 Just f' -> do
                     let t' = if Magisterium.isWaiting game then Magisterium.time game else t
-                        dt = (-) 1 $ (t'/10000) - (t0/10000)
-                        line = Space.flatLine (dt, apply f dt, 0) 0.3 (atan (apply f' dt))
+                        dt = t' - t0
+                        dx = 2 / 60e3
+                        line = Space.flatLine ((-) 1 (dx*dt), apply f ((-) 1 $ dx*dt), 0) 0.3 (atan (apply f' ((-) 1 $ dx*dt)))
                     renderLines (newRGB 1 1 0) line
 
 displayBlock :: Magisterium.Game -> GLUT.DisplayCallback
@@ -124,9 +126,11 @@ displayBlock game = do
             case (projectile . offensive . order) game of
                 Nothing -> return ()
                 Just (t0,f) -> do
-                    let dt = (-) 1 $ (t/10000) - (t0/10000)
-                        line = Space.flatLine (dt, apply f dt, 0) 0.3 
-                            (atan (apply (intersect f) dt))
+                    let dt = t - t0
+                        dx = 2 / 60e3
+                        line = Space.flatLine 
+                            ((-) 1 (dx*dt), apply f ((-) 1 $ dx*dt), 0) 0.3
+                            (atan (apply (intersect f) ((-) 1 $ dx*dt)))
                     renderLines (newRGB 1 0 0) line
 
 displayNewGameTime :: Magisterium.Game -> GLUT.DisplayCallback
