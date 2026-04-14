@@ -20,3 +20,4 @@ solve' :: Tree Token -> Point -> Double
 
 The parser will be rebuilt in the 'folklore' repository!
 
+The goal of this project is to encourage productive entertainment.
