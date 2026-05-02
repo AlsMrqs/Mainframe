@@ -15,6 +15,7 @@ import qualified Control.Monad.State as State
 import qualified Data.Bool as Bool
 import qualified Text.Read as Read
 import qualified System.Random as Random
+import qualified Solve as Solve -- Convergence
 
 -----------------{ Function } ------------------
 newtype Function = Function { apply :: Double -> Double }
@@ -80,15 +81,18 @@ range = [-1,-1+1e-2..1]
 isPerpendicular :: Function -> Function -> Bool
 isPerpendicular f g = fs == gs
     where
-    -- fs = map (round . (*) 1e4 . apply (derive f)) range
-    fs = map (round . (*) 1e4 . \x -> (-1) / apply f x) range
-    gs = map (round . (*) 1e4 . apply g) range
+    -- fs = map (round . (*) 1e4 . \x -> (-1) / apply f x) range
+    -- gs = map (round . (*) 1e4 . apply g) range
+    fs = map (roundTo3 . \x -> (-1) / apply f x) range
+    gs = map (roundTo3 . apply g) range
 
 isDerivative :: Function -> Function -> Bool
 isDerivative f g = f' == g'
     where
-    f' = map (round . (*) 1e4 . apply (derive f)) range
-    g' = map (round . (*) 1e4 . apply g) range
+    -- f' = map (round . (*) 1e4 . apply (derive f)) range
+    -- g' = map (round . (*) 1e4 . apply g) range
+    f' = map (roundTo3 . apply (derive f)) range
+    g' = map (roundTo3 . apply g) range
 
 follow :: Function -> Double -> [Space.Point]
 follow f x = map (Math.sumPoint (x, apply f x,0) .  flip Math.rotateZ alpha) aim
@@ -213,6 +217,12 @@ data Player = Player
     , points   :: Int
     , position :: Position } deriving Show
 
+positionP1 :: Game -> Position
+positionP1 = position . player1
+
+positionP2 :: Game -> Position
+positionP2 = position . player2
+
 insertName :: String -> Player -> Player
 insertName str player = player { nickName = str }
 
@@ -254,7 +264,8 @@ play t str game = case status game of
         >>= pure . fmap (nextRound t) . flip insertPositionP1 game
     InsertPositionP2 -> readPoint str    
         >>= fmap (fmap (nextRound t)) . flip insertPositionP2 game
-    Launch -> readFunction str >>= fmap (fmap (nextRound t)) . flip (launch t) game
+    Launch ->  -- MACHINE INPUT (!!)
+        readFunction str >>= fmap (fmap (nextRound t)) . flip (launch t) game
     Track  -> readFunction str >>= fmap (fmap (nextRound t)) . flip track game
     Block  -> readFunction str >>= fmap (fmap (nextRound t)) . flip block game
     Waiting NewGame -> 
@@ -268,12 +279,12 @@ launch :: Time -> Function -> Game -> Either Error (String,Game)
 launch t0 f game = 
     let (xOff,yOff) = (tuplePosition . position . offensivePlayer) game
         (xDef,yDef) = (tuplePosition . position . defensivePlayer) game
-        origin      = abs ((apply f xOff) - yOff) < 1e-9
-        hit         = abs ((apply f xDef) - yDef) < 1e-9
+        origin      = abs ((roundTo3 $ apply f xOff) - yOff) < 1e-9
+        hit         = abs ((roundTo3 $ apply f xDef) - yDef) < 1e-9
         newOrder    = (insertOffensive t0 f . order) game
     in if not hit || not origin
         then Left "Invalid projectile!"
-        else pure . (,) "Expression accepted!" $ game { order = newOrder }
+        else pure . (,) "Expression accepted!" . changeTime t0 $ game { order = newOrder }
 
 track :: Function -> Game -> Either Error (String,Game)
 track f game = 
@@ -333,12 +344,12 @@ sameSideYAxis :: Double -> Double -> Bool
 sameSideYAxis x1 x2 = (==) (x1 / abs x1) (x2 / abs x2)
 
 --------------------{ Time System }--------------------
-timeOver :: Time -> Game -> Maybe (Message,Game)
-timeOver t game = do
+timeOver :: Position -> Time -> Game -> Maybe (Message,Game)
+timeOver randPos t game = do
     case status game of
-        InsertPositionP1 -> event t 30 (randomPosMsg,insertRandomPositionP1) game
-        InsertPositionP2 -> event t 30 (randomPosMsg,insertRandomPositionP2) game
-        Launch           -> event t 60 (launchMsg,newGame) game
+        InsertPositionP1 -> event t 15 (randomPosMsg,insertRandomPositionP1 randPos) game
+        InsertPositionP2 -> event t 15 (randomPosMsg,insertRandomPositionP2 randPos) game
+        Launch           -> event t 120 (launchMsg,newGame) game
         Track            -> event t 60 (trackMsg,newGame) game
         Block            -> event t 60 (blockMsg,newGame) game
         Waiting Pause    -> Nothing
@@ -359,31 +370,38 @@ event t limit (msg,f) game = Bool.bool Nothing (Just (msg,newGame)) activated
     t0 = time game
     newGame = f t game
 
-insertRandomPositionP1 :: Time -> Game -> Game
-insertRandomPositionP1 t game = nextRound t $ game { player1 = newPlayer }
+insertRandomPositionP1 :: Position -> Time -> Game -> Game
+insertRandomPositionP1 randPos t game = nextRound t $ game { player1 = newPlayer }
     where
-    newPlayer = insertPosition (Position 0.1 0) (player1 game)
+    -- newPlayer = insertPosition (Position 0.1 0) (player1 game)
+    newPlayer = insertPosition (randPos) (player1 game)
 
-insertRandomPositionP2 :: Time -> Game -> Game
-insertRandomPositionP2 t game = nextRound t $ game { player2 = newPlayer }
+insertRandomPositionP2 :: Position -> Time -> Game -> Game
+insertRandomPositionP2 (Position xP2 yP2) t game = 
+    nextRound t $ game { player2 = newPlayer }
     where
     xP1 = (x . position . player1) game
-    xP2 = Bool.bool 0.5 (-0.5) (sameSideYAxis xP1 0.5)
-    newPlayer = insertPosition
-        (Position xP2 0.0)
-        (player1 game)
+    newXP2 = Bool.bool xP2 (negate xP2) (sameSideYAxis xP1 xP2)
+    newPlayer = insertPosition (Position newXP2 yP2) (player2 game)
 
 newGame :: Time -> Game -> Game
 newGame t game = changeTime t $ game { status = InsertPositionP1 }
 
 generateRandomPosition :: IO Position
 generateRandomPosition = do
-    newX <- newRandom >>= return . (/) 1 . fromIntegral
-    newY <- newRandom >>= return . (/) 1 . fromIntegral 
+    newX <- newRandom >>= return . (*) 1e-3 . fromIntegral
+    newY <- newRandom >>= return . (*) 1e-3 . fromIntegral 
     if validPosition (newX,newY)
-        then return $ Position newX newY
+        -- roundTo3 (is a test)
+        then return $ Position (roundTo3 newX) (roundTo3 newY)
         else generateRandomPosition
 
 newRandom :: IO Integer
-newRandom = Random.newStdGen >>= return . fst . Random.randomR (-100,100)
+-- newRandom = Random.newStdGen >>= return . fst . Random.randomR (-100,100)
+newRandom = Random.newStdGen >>= return . fst . Random.randomR (-999,999)
 
+roundTo2 :: Double -> Double
+roundTo2 x = fromIntegral (round (x * 1e2)) / 1e2
+
+roundTo3 :: Double -> Double
+roundTo3 x = fromIntegral (round (x * 1e3)) / 1e3

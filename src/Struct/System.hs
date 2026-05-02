@@ -23,18 +23,19 @@ insertMessage str sys = sys { message = str }
 
 data Program = Program
     { bitmap      :: Maybe BitMap.BitMap 
-    -- , magisterium :: Maybe Magisterium.Magisterium
-    , derivative  :: Maybe Magisterium.Game
+    , magisterium :: Maybe Magisterium.Game
+    -- , derivative  :: Maybe Magisterium.Game
     } deriving Show
 
--- callMagisterium = magisterium . program
+callMagisterium = magisterium . program
 callBitmap      = bitmap . program
-callDerivative  = derivative . program
+-- callDerivative  = derivative . program
 
 type ProgName = String
 
 programs :: [ProgName]
-programs = ["bitmap","derivative"]
+-- programs = ["bitmap","derivative"]
+programs = ["bitmap","magisterium"]
 
 -- System Functions
 
@@ -79,8 +80,8 @@ modifier k = case k of
 close :: String -> (Program -> Program)
 close str = case str of
     "bitmap"      -> \prg -> prg { bitmap = Nothing }
-    "derivative"  -> \prg -> prg { derivative = Nothing }
-    -- "magisterium" -> \prg -> prg { magisterium = Nothing }
+    -- "derivative"  -> \prg -> prg { derivative = Nothing }
+    "magisterium" -> \prg -> prg { magisterium = Nothing }
     _        -> id
 
 startBitMap :: System -> System
@@ -91,11 +92,13 @@ startBitMap sys = sys { program = (startIt . program) sys }
 shellFunction :: (Shell.Shell -> Shell.Shell) -> System -> System
 shellFunction f sys = sys { shell = (f . shell) sys }
 
--- magisteriumFunction :: (Magisterium.Magisterium -> Magisterium.Magisterium) -> System -> System
--- magisteriumFunction f sys = Bool.bool sys sys' $ (Manager.isElem "magisterium" . manager) sys
---     where
---     sys' = sys { program = (magisteriumApply f . program) sys } 
---     magisteriumApply g prog = prog { magisterium = (fmap g . magisterium) prog }
+magisteriumFunction :: (Magisterium.Game -> Magisterium.Game) 
+    -> System -> System
+magisteriumFunction f sys = Bool.bool sys sys' $ (Manager.isElem "magisterium" . manager) 
+    sys
+    where
+    sys' = sys { program = (magisteriumApply f . program) sys } 
+    magisteriumApply g prog = prog { magisterium = (fmap g . magisterium) prog }
 
 bitmapFunction :: (BitMap.BitMap -> BitMap.BitMap) -> System -> System
 bitmapFunction f sys = Bool.bool sys sys' $ (Manager.isElem "bitmap" . manager) sys
@@ -103,9 +106,9 @@ bitmapFunction f sys = Bool.bool sys sys' $ (Manager.isElem "bitmap" . manager) 
     sys' = sys { program = (bitmapApply f . program) sys } 
     bitmapApply g prog = prog { bitmap = (fmap g . bitmap) prog }
 
-derivativeFunction :: (Magisterium.Game -> Magisterium.Game) -> System -> System
-derivativeFunction f sys = Bool.bool sys sys' $ (Manager.isElem "derivative" . manager) sys
-    where
-    sys' = sys { program = (derivativeApply f . program) sys }
-    derivativeApply g prog = prog { derivative = (fmap g . derivative) prog }
+-- derivativeFunction :: (Magisterium.Game -> Magisterium.Game) -> System -> System
+-- derivativeFunction f sys = Bool.bool sys sys' $ (Manager.isElem "derivative" . manager) sys
+--     where
+--     sys' = sys { program = (derivativeApply f . program) sys }
+--     derivativeApply g prog = prog { derivative = (fmap g . derivative) prog }
 

@@ -31,3 +31,4 @@ solve' tree (x,y,z) = case tree of
 assign :: (Point -> Double, Point -> Double, Point -> Double) -> Point -> Point
 assign (f,g,h) pnt = (f pnt, g pnt, h pnt)
 
+

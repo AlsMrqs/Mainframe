@@ -18,9 +18,8 @@ data Type = Starter_
     deriving (Show, Eq)
 
 data Token = Token [Char] Type 
-    -- deriving Show
 
-instance Show Token where
+instance Show Token where 
     show (Token str kind) = "Token '" ++ str ++ "' " ++ (show kind)
 
 data State a = State Type Bool a 

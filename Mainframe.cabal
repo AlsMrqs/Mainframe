@@ -108,6 +108,7 @@ library
         process,
         time,
         csound-expression
+        , Convergence
 
     -- Directories containing source files.
     hs-source-dirs:   src
@@ -169,7 +170,8 @@ executable Mainframe
         Mainframe,
         process,
         time,
-        csound-expression
+        csound-expression,
+        Convergence
 
     -- Directories containing source files.
     hs-source-dirs:   app src
@@ -187,7 +189,7 @@ test-suite Mainframe-test
     default-language: Haskell2010
 
     -- Modules included in this executable, other than Main.
-    -- other-modules:
+    other-modules:
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -197,11 +199,15 @@ test-suite Mainframe-test
 
     -- Directories containing source files.
     hs-source-dirs:   test
+        ../Convergence
+        src
 
     -- The entrypoint to the test suite.
     main-is:          Main.hs
 
     -- Test dependencies.
     build-depends:
-        base ^>=4.18.3.0,
-        Mainframe
+        base ^>=4.18.3.0
+        , time
+        , Mainframe
+        , Convergence

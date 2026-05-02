@@ -1,4 +1,5 @@
 module Main where
+
 import qualified Graphics.Rendering.OpenGL as OpenGL hiding (bitmap,Program)
 import qualified Graphics.UI.GLUT as GLUT hiding (Text,bitmap,Program)
 -- import Csound.IO
@@ -31,9 +32,8 @@ import qualified Struct.Program.Magisterium.Magisterium as Magisterium
 import qualified Control.Monad.State as State
 
 -- todo:
--- [+] - Random Position
 -- [+] - Player vs Com
--- [+] - Point System
+-- [+] - Score System
 
 main :: IO ()
 main = do
@@ -47,7 +47,7 @@ main = do
         $ System.System (GLUT.Size 300 300)
             Shell.newShell
             []
-            (Manager.fromList ["bitmap","derivative"])
+            (Manager.fromList ["bitmap","magisterium"])
             $ System.Program 
                 (Just . BitMap.bitmap $ GLUT.Size 300 300)
                 (Just $ Magisterium.test time)
