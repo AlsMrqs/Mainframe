@@ -2,52 +2,55 @@ module Math.Neuron where
 
 import qualified Graph as Graph
 import qualified Folklore.Lexer as Lexer
-import qualified Math.Alphabet as Math
+import qualified Math.Alphabet as Math.Alphabet
 
-type Neuron = Graph.Graph (Lexer.Kind Math.Type) Char
+lex :: [Char] -> (Lexer.Token (Lexer.Kind Math.Alphabet.Type), [Char])
+lex = Lexer.lex Math.Neuron.start . dropWhile ((==) ' ')
+
+type Neuron = Graph.Graph (Lexer.Kind Math.Alphabet.Type) Char
 
 start :: Neuron
-start = Graph.Vertex (Lexer.Kind Math.None_ Lexer.Reject) context
+start = Graph.Vertex (Lexer.Kind Math.Alphabet.None_ Lexer.Reject) context
     where
-    context = \k -> case Math.token k of
-        Math.Starter_   -> return starter
-        Math.Separator_ -> return separator
-        Math.Finisher_  -> return finisher
-        Math.Operator_  -> return operator
-        Math.Integer_   -> return integer
+    context = \k -> case Math.Alphabet.token k of
+        Math.Alphabet.Starter_   -> return starter
+        Math.Alphabet.Separator_ -> return separator
+        Math.Alphabet.Finisher_  -> return finisher
+        Math.Alphabet.Operator_  -> return operator
+        Math.Alphabet.Integer_   -> return integer
         _ -> Nothing
 
 starter :: Neuron
-starter = Graph.Vertex (Lexer.Kind Math.Starter_ Lexer.Accept) (const Nothing)
+starter = Graph.Vertex (Lexer.Kind Math.Alphabet.Starter_ Lexer.Accept) (const Nothing)
 
 separator :: Neuron
-separator = Graph.Vertex (Lexer.Kind Math.Separator_ Lexer.Accept) (const Nothing)
+separator = Graph.Vertex (Lexer.Kind Math.Alphabet.Separator_ Lexer.Accept) (const Nothing)
 
 finisher :: Neuron
-finisher = Graph.Vertex (Lexer.Kind Math.Finisher_ Lexer.Accept) (const Nothing)
+finisher = Graph.Vertex (Lexer.Kind Math.Alphabet.Finisher_ Lexer.Accept) (const Nothing)
 
 operator :: Neuron
-operator = Graph.Vertex (Lexer.Kind Math.Operator_ Lexer.Accept) (const Nothing)
+operator = Graph.Vertex (Lexer.Kind Math.Alphabet.Operator_ Lexer.Accept) (const Nothing)
 
 integer :: Neuron
-integer = Graph.Vertex (Lexer.Kind Math.Integer_ Lexer.Accept) context
+integer = Graph.Vertex (Lexer.Kind Math.Alphabet.Integer_ Lexer.Accept) context
     where
-    context = \k -> case Math.token k of
-        Math.Integer_     -> return integer
-        Math.Punctuation_ -> return point
+    context = \k -> case Math.Alphabet.token k of
+        Math.Alphabet.Integer_     -> return integer
+        Math.Alphabet.Punctuation_ -> return point
         _ -> Nothing
 
 point :: Neuron
-point = Graph.Vertex (Lexer.Kind Math.Punctuation_ Lexer.Reject) context
+point = Graph.Vertex (Lexer.Kind Math.Alphabet.Punctuation_ Lexer.Reject) context
     where
-    context = \k -> case Math.token k of
-        Math.Integer_ -> return double
+    context = \k -> case Math.Alphabet.token k of
+        Math.Alphabet.Integer_ -> return double
         _ -> Nothing
 
 double :: Neuron
-double = Graph.Vertex (Lexer.Kind Math.Double_ Lexer.Accept) context
+double = Graph.Vertex (Lexer.Kind Math.Alphabet.Double_ Lexer.Accept) context
     where
-    context = \k -> case Math.token k of
-        Math.Integer_ -> return double
+    context = \k -> case Math.Alphabet.token k of
+        Math.Alphabet.Integer_ -> return double
         _ -> Nothing
 

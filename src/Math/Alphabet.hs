@@ -6,7 +6,7 @@ data Type = Starter_ | Separator_ | Finisher_
     | Variable_ 
     | Integer_ | Double_ | None_ 
     deriving (Show, Eq)
-
+    
 starter     :: [Char]
 separator   :: [Char]
 finisher    :: [Char]

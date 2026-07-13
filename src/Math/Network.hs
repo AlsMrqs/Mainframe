@@ -1,27 +1,34 @@
 module Math.Network where
 
-import qualified Graph as Graph
-import qualified Manager as Manager
+import qualified Graph    as Graph
+import qualified Manager  as Manager
+import qualified Data.Map as Map
+
 import qualified Folklore.Lexer as Lexer
 import qualified Folklore.Grammar as Grammar
 import qualified Math.Alphabet as Math.Alphabet
 import qualified Math.Neuron as Math.Neuron
-import qualified Data.Map as Map
 
-node :: Math.Alphabet.Type -> Bool
-node Math.Alphabet.Operator_ = True
-node _ = False
+import qualified Control.Monad.State as State
 
--- arity :: Lexer.Token Math.Alphabet.Type -> Int
--- arity (Lexer.Token Math.Alphabet.Operator_ str) = 
--- arity (Lexer.Token _ _) = 0
+-- E  = n O | v O | a E' f
+-- O  = p E | λ
 
-type Expression = Grammar.Spark Math.Alphabet.Type
+expression :: Grammar.Grammar Math.Alphabet.Type
+expression = Graph.Vertex [] f
+    where
+    f = \k -> case k of
+        Math.Alphabet.Integer_  -> return operation
+        Math.Alphabet.Double_   -> return operation
+        Math.Alphabet.Variable_ -> return operation
+        Math.Alphabet.Starter_  -> return $ 
+            expression { Graph.vert = Math.Alphabet.Finisher_ : (Graph.vert expression) }
+        _         -> Nothing
 
-type Names = Map.Map (Lexer.Token Math.Alphabet.Type) Expression
-
-_ :: Lexer.Token Math.Alphabet.Type -> Expression -> Expression
-_ 
-
-Manager.Manager Expression
+operation :: Grammar.Grammar Math.Alphabet.Type
+operation = Graph.Vertex [] f
+    where
+    f = \k -> case k of
+        Math.Alphabet.Operator_ -> return expression
+        _         -> Nothing
 

@@ -81,12 +81,16 @@ library
         -- Render,
         -- Math,
         -- Screen,
-        -- Manager,
+        Manager,
         Folklore.Lexer,
         Folklore.Grammar,
+        Folklore.Parser,
         Math.Alphabet,
         Math.Neuron,
-        Math.Network
+        Math.Network,
+        Math.AST,
+        Math.Parser,
+        Math.Solver
 
 
     -- LANGUAGE extensions used by modules in this package.
@@ -138,12 +142,16 @@ executable Mainframe
         -- Render
         -- Math
         -- Screen
-        -- Manager
+        Manager
         Folklore.Lexer
         Folklore.Grammar
+        Folklore.Parser
         Math.Alphabet
         Math.Neuron
         Math.Network
+        Math.AST
+        Math.Parser
+        Math.Solver
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
