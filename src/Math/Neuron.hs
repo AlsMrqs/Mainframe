@@ -18,6 +18,7 @@ start = Graph.Vertex (Lexer.Kind Math.Alphabet.None_ Lexer.Reject) context
         Math.Alphabet.Finisher_  -> return finisher
         Math.Alphabet.Operator_  -> return operator
         Math.Alphabet.Integer_   -> return integer
+        Math.Alphabet.Variable_  -> return variable
         _ -> Nothing
 
 starter :: Neuron
@@ -52,5 +53,13 @@ double = Graph.Vertex (Lexer.Kind Math.Alphabet.Double_ Lexer.Accept) context
     where
     context = \k -> case Math.Alphabet.token k of
         Math.Alphabet.Integer_ -> return double
+        _ -> Nothing
+
+variable :: Neuron
+variable = Graph.Vertex (Lexer.Kind Math.Alphabet.Variable_ Lexer.Accept) context
+    where
+    context = \k -> case Math.Alphabet.token k of
+        Math.Alphabet.Variable_ -> return variable 
+        Math.Alphabet.Integer_ -> return variable
         _ -> Nothing
 

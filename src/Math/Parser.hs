@@ -9,48 +9,33 @@ import qualified Folklore.Grammar as Grammar
 import qualified Folklore.Parser  as Parser
 
 import qualified Math.Alphabet as Math.Alphabet
-import qualified Math.Neuron   as Math.Neuron
 import qualified Math.AST      as Math.AST
 
 type AST        = Math.AST.Expression
 type Math       = Math.Alphabet.Type
 type Pushdown a = Parser.Pushdown a
-type Transition a = Pushdown a -> State.StateT AST (Either.Either [Char]) (Pushdown Math)
+type Transition = State.StateT AST (Either.Either [Char]) (Pushdown Math)
 
-parse :: String -> Pushdown Math -> AST -> Either [Char] AST
-parse []  _        ast = return ast
-parse str pushdown ast = let (tokenKind,remainder) = Math.Neuron.lex str
-    in
-    case (Lexer.flag . Lexer.label) tokenKind of
-        Lexer.Reject -> Left ("Invid input!" ++ (show tokenKind))
-        Lexer.Accept -> 
-            State.runStateT (allocate (fmap Lexer.unkind tokenKind)) ast 
-                >>= \(a,b) -> parse (dropWhile ((==) ' ') remainder) a b
+parse :: [Lexer.Token Math] -> (Pushdown Math, AST) -> Either [Char] AST
+parse []       (_       ,ast) = return ast
+parse (tk:tks) (pushdown,ast) = State.runStateT allocate ast >>= parse tks
     where
+    allocate :: Transition
+    allocate = let currentGrammar = Parser.grammar pushdown
+        in
+        maybe (check tk pushdown) (update tk (pushdown,ast))
+            $ State.runStateT (Grammar.transition (Lexer.label tk)) currentGrammar
 
-    allocate :: Lexer.Token Math -> State.StateT AST (Either.Either [Char]) (Pushdown Math)
-    allocate tok = control pushdown
-        where
+update :: Lexer.Token Math -> (Pushdown Math,AST) -> ([Math],Grammar.Grammar Math) -> Transition
+update token (pushdown,ast) (load,grammar) = do
+    State.put  . maybe ast id 
+        $ Math.AST.insert (Math.AST.toExpression token) ast
+    return ((Parser.push load . Parser.pointer grammar) pushdown)
 
-        control :: Pushdown Math -> State.StateT AST (Either.Either [Char]) (Pushdown Math)
-        control pushdown' = do
-            ast' <- State.get
-            let transition = Grammar.transition (Lexer.label tok)
-
-            case State.runStateT transition (Parser.grammar pushdown') of
-                -- [+] - verify stack
-                Nothing -> do
-                    case (Parser.peak pushdown') of
-                        Nothing -> State.lift $ 
-                            Left ("Invalid gramatical input (in): " ++ show tok)
-                        Just k  -> 
-                            if Lexer.label tok == k
-                                then return pushdown' -- remove from stack -> add into AST
-                                else State.lift $ 
-                                    Left ("Invalid gramatical input (in): " ++ show tok)
-                    
-                Just (stk,gram')  -> do
-                    State.put . maybe ast' id $
-                        (Math.AST.insert (Math.AST.toExpression tok) ast')
-                    return ((Parser.push stk . Parser.pointer gram') pushdown')
-
+check :: Lexer.Token Math -> Pushdown Math -> Transition
+check token pushdown = maybe (State.lift empty) consume (Parser.peak pushdown)
+    where
+    empty   = Left ("Invalid gramatical input (in): " ++ (show token))
+    consume = Bool.bool (State.lift empty) (return (Parser.pop pushdown)) 
+        . (==) (Lexer.label token)
+    
