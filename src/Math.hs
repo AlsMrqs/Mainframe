@@ -10,10 +10,11 @@ fromIntegralPoint (x,y,z) = (fromIntegral x, fromIntegral y, fromIntegral z)
 
 getTime :: IO Double
 getTime = do
-    curretTime <- getCurrentTime
+    curretTime <- Clock.getCurrentTime
     return
         . (/1e9) . fromIntegral
-        . diffTimeToPicoseconds $ utctDayTime curretTime
+        . Clock.diffTimeToPicoseconds 
+        $ Clock.utctDayTime curretTime
 
 isInsideTriangle :: Point -> Point -> Point -> Point -> Bool
 isInsideTriangle a b c p = let
@@ -25,7 +26,7 @@ isInsideTriangle a b c p = let
 
 -- foldable : [Point] 
 isInsidePolygon :: Point -> [Point] -> Bool
-isInsidePolygon p lst = case uncons lst of
+isInsidePolygon p lst = case List.uncons lst of
     Nothing     -> False
     Just (x,xs) -> g p x xs
 -- remake:

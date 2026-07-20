@@ -1,8 +1,8 @@
-module Struct.Space where
+module Space where
 import qualified System.Random as Random
 import qualified Data.Bool as Bool (bool)
 import qualified Data.List as List (foldl1', foldl')
-import qualified Struct.Math as Math
+import qualified Math as Math
  
 type Point = (Coord, Coord, Coord)
 type Coord = Double

@@ -1,17 +1,17 @@
-module Struct.Hardware where
+module Hardware where
 import qualified Graphics.Rendering.OpenGL as OpenGL
 import qualified Graphics.UI.GLUT as GLUT
 import qualified Control.Concurrent.MVar as MVar
 import qualified Control.Concurrent as Concurrent
-import qualified Struct.System as System
-import qualified Struct.Graph as Graph
-import qualified Struct.Shell as Shell
-import qualified Struct.Render as Render
-import qualified Struct.Program.BitMap.Display as BitMapDisplay
-import qualified Struct.Program.Magisterium.Display as MagisteriumDisplay
-import qualified Struct.Program.Magisterium.Controller as MagisteriumController
+import qualified System as System
+import qualified Graph as Graph
+import qualified Shell as Shell
+import qualified Render as Render
+import qualified Program.BitMap.Display as BitMapDisplay
+import qualified Program.Magisterium.Display as MagisteriumDisplay
+import qualified Program.Magisterium.Controller as MagisteriumController
 import qualified System.Process as Process
-import qualified Struct.Math as Math
+import qualified Math as Math
 import qualified Data.List as List
 import qualified Data.Bool as Bool
 import qualified Data.Time.Clock as Clock

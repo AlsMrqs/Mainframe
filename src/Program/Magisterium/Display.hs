@@ -1,4 +1,4 @@
-module Struct.Program.Magisterium.Display
+module Program.Magisterium.Display
     ( module Magisterium
     , display 
     , renderPoints
@@ -7,11 +7,11 @@ where
 
 import qualified Graphics.Rendering.OpenGL as OpenGL
 import qualified Graphics.UI.GLUT as GLUT
-import Struct.Program.Magisterium.Magisterium as Magisterium
-import qualified Struct.Render as Render
-import qualified Struct.Screen as Screen
-import qualified Struct.Space  as Space
-import qualified Struct.Math   as Math
+import Program.Magisterium.Magisterium as Magisterium
+import qualified Render as Render
+import qualified Screen as Screen
+import qualified Space  as Space
+import qualified Math   as Math
 import qualified Control.Concurrent as Concurrent
 
 renderLines :: Screen.RGB GLUT.GLfloat -> [Space.Point] -> GLUT.DisplayCallback

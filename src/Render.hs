@@ -1,9 +1,9 @@
-module Struct.Render where
+module Render where
 
 import qualified Graphics.UI.GLUT as GLUT
 import qualified Graphics.Rendering.OpenGL as OpenGL hiding (Program)
-import qualified Struct.Space as Space
-import qualified Struct.Screen as Screen
+import qualified Space as Space
+import qualified Screen as Screen
 
 prism :: Screen.Element -> Screen.RGB Screen.Flipside
 prism = Screen._RGB_

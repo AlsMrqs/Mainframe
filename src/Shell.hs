@@ -1,4 +1,4 @@
-module Struct.Shell where
+module Shell where
 import qualified Data.List as List (init, intercalate, reverse, uncons)
 import qualified GHC.Int as GHC.Int
 

@@ -1,4 +1,4 @@
-module Struct.Program.BitMap.BitMap where
+module Program.BitMap.BitMap where
 import qualified Graphics.Rendering.OpenGL as OpenGL
 import qualified Graphics.UI.GLUT          as GLUT
 import qualified System.IO.Error as Error
@@ -7,8 +7,8 @@ import qualified Data.Bool as Bool
 import qualified Data.Set  as Set
 import qualified Data.Map  as Map
 import qualified GHC.Int as GHC.Int
-import qualified Struct.Screen as Screen
-import qualified Struct.Space  as Space
+import qualified Screen as Screen
+import qualified Space  as Space
 
 type Bit = Screen.Element
 data Pix = Pix (Screen.RGB Screen.Flipside) [Space.Point] 

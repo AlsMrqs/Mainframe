@@ -1,18 +1,19 @@
-module Struct.Program.Magisterium.Magisterium where
+module Program.Magisterium.Magisterium where
 
 import qualified Graphics.Rendering.OpenGL as OpenGL
 import qualified Graphics.UI.GLUT as GLUT
-import qualified Struct.Math as Math
-import qualified Struct.Screen as Screen
-import qualified Struct.Space as Space
-import qualified Struct.Compiler.Language.Grammar as Grammar
-import qualified Struct.Compiler.Solver as Solver
-import qualified Struct.Compiler.Parser as Parser
-import qualified Struct.Compiler.Lexer as Lexer
+import qualified Math as Math
+import qualified Screen as Screen
+import qualified Space as Space
+
+import qualified Math.Solver as Math.Solver
+import qualified Math.Parser as Math.Parser
+
 import qualified Control.Concurrent as Concurrent (forkIO, killThread, MVar, modifyMVar_,threadDelay)
-import qualified Struct.Graph as Graph
+import qualified Graph as Graph
 import qualified Control.Monad.State as State
 import qualified Data.Bool as Bool
+import qualified Data.Map as Map
 import qualified Text.Read as Read
 import qualified System.Random as Random
 -- import qualified Solve as Solve -- Convergence
@@ -330,10 +331,24 @@ block f game =
             
 ---------------------------------------------------------------
 
-readFunction :: Input -> Either Error Function 
-readFunction str = fmap (Function . f) (Grammar.parse str)
-    where
-    f tree x = Solver.solve' tree (x,0,0)
+----------- Parser -------------
+-- readFunction :: Input -> Either Error Function 
+-- readFunction str = fmap (Function . f) (Grammar.parse str)
+-- h
+--     where
+--     f tree x = Solver.solve' tree (x,0,0)
+
+-- newtype Function = Function { apply :: Double -> Double }
+
+readFunction :: Input -> Either Error Function
+readFunction str = do
+    let dict x = Map.fromList $ zip ["x","y","z"] ([x,0,0]::[Double])
+        errorMsg = "Can't build this function!"
+    Math.Parser.parse str 
+        >>= \ast -> Math.Solver.solve (dict 0) ast
+        >>= \_ -> return 
+            $ Function (\x -> either (const 0) id (Math.Solver.solve (dict x) ast))
+--------------------------------
 
 readPoint :: String -> Either Error Position
 readPoint str = maybe (Left "Invalid input!") tryPosition

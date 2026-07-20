@@ -1,14 +1,14 @@
-module Struct.Program.BitMap.Display
+module Program.BitMap.Display
     ( module BitMap
     , display
     , mouse ) 
 where
 import qualified Graphics.Rendering.OpenGL as OpenGL
 import qualified Graphics.UI.GLUT as GLUT
-import Struct.Program.BitMap.BitMap as BitMap
+import Program.BitMap.BitMap as BitMap
 import qualified Data.Set as Set
-import qualified Struct.Screen as Screen
-import qualified Struct.Render as Render
+import qualified Screen as Screen
+import qualified Render as Render
 
 display :: BitMap.BitMap -> GLUT.DisplayCallback
 display _bitmap = do

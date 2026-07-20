@@ -1,8 +1,8 @@
-module Struct.Screen where
+module Screen where
 import Graphics.Rendering.OpenGL -- import Graphics.UI.GLUT
 import qualified Data.List as List
-import Struct.Graph   as Graph 
-import Struct.Space   as Space
+import Graph   as Graph 
+import Space   as Space
 
 type Flipside      = GLfloat
 type RGB           = Color3

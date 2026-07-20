@@ -1,14 +1,14 @@
-module Struct.System where
+module System where
 import qualified Graphics.UI.GLUT as GLUT
 import qualified Data.List as List (elem)
 import qualified Data.Bool as Bool (bool)
 import qualified Data.Maybe as Maybe (isNothing)
-import qualified Struct.Program.BitMap.Display as BitMap
-import qualified Struct.Program.Magisterium.Display as Magisterium
-import qualified Struct.Graph as Graph
+import qualified Program.BitMap.Display as BitMap
+import qualified Program.Magisterium.Display as Magisterium
+import qualified Graph as Graph
 
-import qualified Struct.Shell as Shell
-import qualified Struct.Manager as Manager
+import qualified Shell as Shell
+import qualified Manager as Manager
 
 data Program = Program
     { bitmap      :: Maybe BitMap.BitMap 

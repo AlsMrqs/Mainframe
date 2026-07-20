@@ -15,20 +15,27 @@ import qualified Control.Monad.State as State
 -- O  = p E | λ
 
 expression :: Grammar.Grammar Math.Alphabet.Type
-expression = Graph.Vertex [] f
+expression = Graph.Vertex [] edge
     where
-    f = \k -> case k of
-        Math.Alphabet.Integer_  -> return operation
-        Math.Alphabet.Double_   -> return operation
-        Math.Alphabet.Variable_ -> return operation
-        Math.Alphabet.Starter_  -> return $ 
-            expression { Graph.vert = Math.Alphabet.Finisher_ : (Graph.vert expression) }
+    edge = \k -> case k of
+        Math.Alphabet.Integer_         -> return operation
+        Math.Alphabet.Double_          -> return operation
+        Math.Alphabet.Variable_        -> return operation
+        Math.Alphabet.ParenthesisOpen_ -> return 
+            $ expression    
+                { Graph.vert = Math.Alphabet.ParenthesisClose_ : (Graph.vert expression) }
+        Math.Alphabet.BracketOpen_ -> return 
+            $ expression 
+                { Graph.vert = Math.Alphabet.BracketClose_ : (Graph.vert expression) }
+        Math.Alphabet.BracesOpen_ -> return 
+            $ expression 
+                { Graph.vert = Math.Alphabet.BracesClose_ : (Graph.vert expression) }
         _         -> Nothing
 
 operation :: Grammar.Grammar Math.Alphabet.Type
-operation = Graph.Vertex [] f
+operation = Graph.Vertex [] edge
     where
-    f = \k -> case k of
+    edge = \k -> case k of
         Math.Alphabet.Operator_ -> return expression
         _         -> Nothing
 

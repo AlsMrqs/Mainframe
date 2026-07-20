@@ -14,12 +14,13 @@ binOp dict op a b = solve dict a
 
 solve :: Dictionary -> Expression -> Either [Char] Double
 solve dict expr = case expr of
-    (Math.AST.Variable str) -> maybe (Left varError) return (Map.lookup str dict)
-    (Math.AST.Value x)      -> return x
     (Math.AST.Multiplication a b) -> binOp dict (*) a b
     (Math.AST.Division a b)       -> binOp dict (/) a b
     (Math.AST.Subtraction a b)    -> binOp dict (-) a b
     (Math.AST.Addition a b)       -> binOp dict (+) a b
+    (Math.AST.Enclosed _ x _ _)   -> solve dict x
+    (Math.AST.Variable str) -> maybe (Left varError) return (Map.lookup str dict)
+    (Math.AST.Value x)      -> return x
     _ -> return 10
     where
 

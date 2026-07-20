@@ -1,6 +1,6 @@
-module Struct.Program.Magisterium.Controller where
+module Program.Magisterium.Controller where
 
-import Struct.Program.Magisterium.Magisterium
+import Program.Magisterium.Magisterium
 import qualified Data.Bool as Bool
 import qualified System.Random as Random
 
