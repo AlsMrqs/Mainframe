@@ -85,7 +85,9 @@ library
         Math.Network,
         Math.AST,
         Math.Parser,
-        Math.Solver
+        Math.Solver,
+        Machine.Matrix,
+        Machine.Solve
 
 
     -- LANGUAGE extensions used by modules in this package.
@@ -142,6 +144,8 @@ executable Mainframe
         Math.AST
         Math.Parser
         Math.Solver
+        Machine.Matrix
+        Machine.Solve
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

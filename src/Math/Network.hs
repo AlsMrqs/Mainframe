@@ -14,10 +14,15 @@ import qualified Control.Monad.State as State
 -- E  = n O | v O | a E' f
 -- O  = p E | λ
 
+-- todo (_Architecture_):
+-- type Exclude = [Math.Alphabet.Type]
+
 expression :: Grammar.Grammar Math.Alphabet.Type
 expression = Graph.Vertex [] edge
     where
     edge = \k -> case k of
+        -- todo:
+        -- Math.Alphabet.Operator_ -- (-) ? ((retype) Negate) : Invalid
         Math.Alphabet.Integer_         -> return operation
         Math.Alphabet.Double_          -> return operation
         Math.Alphabet.Variable_        -> return operation

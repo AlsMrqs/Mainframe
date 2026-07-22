@@ -16,6 +16,7 @@ import qualified Data.Bool as Bool
 import qualified Data.Map as Map
 import qualified Text.Read as Read
 import qualified System.Random as Random
+import qualified Machine.Solve as Machine
 -- import qualified Solve as Solve -- Convergence
 
 -----------------{ Function } ------------------
@@ -277,21 +278,50 @@ type Error = String
 type Message = String
 type StateComputation = State.StateT Game (Either Error) Message
 
-play :: Time -> String -> Game -> Either Error (String,Game)
+play :: Time -> String -> Game -> IO (Either Error (String,Game))
 play t str game = case status game of
-    InsertPositionP1 -> readPoint str    
+    InsertPositionP1 -> return $ readPoint str    
         >>= pure . fmap (nextRound t) . flip insertPositionP1 game
-    InsertPositionP2 -> readPoint str    
+    InsertPositionP2 -> return $ readPoint str    
         >>= fmap (fmap (nextRound t)) . flip insertPositionP2 game
-    Launch ->  -- MACHINE INPUT (!!)
-        readFunction str >>= fmap (fmap (nextRound t)) . flip (launch t) game
-    Track  -> readFunction str >>= fmap (fmap (nextRound t)) . flip track game
-    Block  -> readFunction str >>= fmap (fmap (nextRound t)) . flip block game
-    Waiting NewGame -> 
-        if str == "continue"
-            then pure . (,) "NewGame Starting!" $ nextRound t game
-            else Left "Type \"continue\" to start a new game!"
-    _                -> pure (str,game)
+    Launch ->  do -- MACHINE INPUT (!!)
+        newStr <- if str == " "
+            then do
+                degree <- Machine.randomDegree
+                let p1 = tuplePosition . positionP1 $ game
+                let p2 = tuplePosition . positionP2 $ game
+                Machine.solution degree p1 p2
+            else return str
+        return $ readFunction newStr -- str 
+                        >>= fmap (fmap (nextRound t)) . flip (launch t) game
+    Track  -> return $ readFunction str 
+        >>= fmap (fmap (nextRound t)) . flip track game
+    Block  -> return $ readFunction str 
+        >>= fmap (fmap (nextRound t)) . flip block game
+    Waiting NewGame -> do
+        return $ 
+            if str == "continue"
+                then pure . (,) "NewGame Starting!" $ nextRound t game
+                else Left "Type \"continue\" to start a new game!"
+    _                -> return $ pure (str,game)
+
+-- play :: Time -> String -> Game -> Either Error (String,Game)
+-- play t str game = case status game of
+--     InsertPositionP1 -> readPoint str    
+--         >>= pure . fmap (nextRound t) . flip insertPositionP1 game
+--     InsertPositionP2 -> readPoint str    
+--         >>= fmap (fmap (nextRound t)) . flip insertPositionP2 game
+--     Launch ->  do -- MACHINE INPUT (!!)
+--         -- if null str 
+--         --     then 
+--         readFunction str >>= fmap (fmap (nextRound t)) . flip (launch t) game
+--     Track  -> readFunction str >>= fmap (fmap (nextRound t)) . flip track game
+--     Block  -> readFunction str >>= fmap (fmap (nextRound t)) . flip block game
+--     Waiting NewGame -> 
+--         if str == "continue"
+--             then pure . (,) "NewGame Starting!" $ nextRound t game
+--             else Left "Type \"continue\" to start a new game!"
+--     _                -> pure (str,game)
 
 ---------------------{ Player Positioning }---------------------todo!!!!!!
 launch :: Time -> Function -> Game -> Either Error (String,Game)
@@ -342,11 +372,11 @@ block f game =
 
 readFunction :: Input -> Either Error Function
 readFunction str = do
-    let dict x = Map.fromList $ zip ["x","y","z"] ([x,0,0]::[Double])
+    let dict x   = Map.fromList $ zip ["x","y","z"] ([x,0,0]::[Double])
         errorMsg = "Can't build this function!"
     Math.Parser.parse str 
         >>= \ast -> Math.Solver.solve (dict 0) ast
-        >>= \_ -> return 
+        >>= \_   -> return 
             $ Function (\x -> either (const 0) id (Math.Solver.solve (dict x) ast))
 --------------------------------
 

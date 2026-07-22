@@ -16,6 +16,7 @@ import qualified Math        as Math
 -- import qualified Math.Parser as Math.Parser
 import qualified Folklore.Grammar as Grammar
 import qualified Folklore.Lexer   as Lexer
+import qualified Machine.Solve    as Machine
 import qualified System as System
 import qualified Manager as Manager
 import qualified Shell as Shell

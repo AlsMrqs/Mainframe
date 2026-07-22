@@ -14,6 +14,7 @@ binOp dict op a b = solve dict a
 
 solve :: Dictionary -> Expression -> Either [Char] Double
 solve dict expr = case expr of
+    (Math.AST.Power a b)          -> binOp dict (**) a b
     (Math.AST.Multiplication a b) -> binOp dict (*) a b
     (Math.AST.Division a b)       -> binOp dict (/) a b
     (Math.AST.Subtraction a b)    -> binOp dict (-) a b

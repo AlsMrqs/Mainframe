@@ -86,12 +86,11 @@ startBitMap sys = sys { program = (startIt . program) sys }
 shellFunction :: (Shell.Shell -> Shell.Shell) -> System -> System
 shellFunction f sys = sys { shell = (f . shell) sys }
 
-magisteriumFunction :: (Magisterium.Game -> Magisterium.Game) 
-    -> System -> System
-magisteriumFunction f sys = Bool.bool sys sys' $ (Manager.isElem "magisterium" . manager) 
-    sys
+magisteriumFunction :: (Magisterium.Game -> Magisterium.Game) -> System -> System
+magisteriumFunction f sys = Bool.bool sys systemUpdated
+    $ (Manager.isElem "magisterium" . manager) sys
     where
-    sys' = sys { program = (magisteriumApply f . program) sys } 
+    systemUpdated           = sys { program = (magisteriumApply f . program) sys } 
     magisteriumApply g prog = prog { magisterium = (fmap g . magisterium) prog }
 
 bitmapFunction :: (BitMap.BitMap -> BitMap.BitMap) -> System -> System
