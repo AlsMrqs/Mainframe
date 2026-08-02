@@ -278,50 +278,33 @@ type Error = String
 type Message = String
 type StateComputation = State.StateT Game (Either Error) Message
 
+autoLaunch :: Game -> IO String
+autoLaunch game = do
+    degree <- Machine.randomDegree
+    let p1 = tuplePosition . positionP1 $ game
+    let p2 = tuplePosition . positionP2 $ game
+    Machine.solution degree p1 p2
+
 play :: Time -> String -> Game -> IO (Either Error (String,Game))
 play t str game = case status game of
-    InsertPositionP1 -> return $ readPoint str    
-        >>= pure . fmap (nextRound t) . flip insertPositionP1 game
-    InsertPositionP2 -> return $ readPoint str    
-        >>= fmap (fmap (nextRound t)) . flip insertPositionP2 game
+    InsertPositionP1 -> return 
+        $ readPoint str >>= pure . fmap (nextRound t) . flip insertPositionP1 game
+    InsertPositionP2 -> return 
+        $ readPoint str >>= fmap (fmap (nextRound t)) . flip insertPositionP2 game
     Launch ->  do -- MACHINE INPUT (!!)
-        newStr <- if str == " "
-            then do
-                degree <- Machine.randomDegree
-                let p1 = tuplePosition . positionP1 $ game
-                let p2 = tuplePosition . positionP2 $ game
-                Machine.solution degree p1 p2
-            else return str
-        return $ readFunction newStr -- str 
-                        >>= fmap (fmap (nextRound t)) . flip (launch t) game
-    Track  -> return $ readFunction str 
-        >>= fmap (fmap (nextRound t)) . flip track game
-    Block  -> return $ readFunction str 
-        >>= fmap (fmap (nextRound t)) . flip block game
+        -- newStr <- if str == " " then autoLaunch game else return str
+        return 
+            $ readFunction str >>= fmap (fmap (nextRound t)) . flip (launch t) game
+    Track  -> return 
+        $ readFunction str >>= fmap (fmap (nextRound t)) . flip track game
+    Block  -> return 
+        $ readFunction str >>= fmap (fmap (nextRound t)) . flip block game
     Waiting NewGame -> do
         return $ 
             if str == "continue"
                 then pure . (,) "NewGame Starting!" $ nextRound t game
                 else Left "Type \"continue\" to start a new game!"
     _                -> return $ pure (str,game)
-
--- play :: Time -> String -> Game -> Either Error (String,Game)
--- play t str game = case status game of
---     InsertPositionP1 -> readPoint str    
---         >>= pure . fmap (nextRound t) . flip insertPositionP1 game
---     InsertPositionP2 -> readPoint str    
---         >>= fmap (fmap (nextRound t)) . flip insertPositionP2 game
---     Launch ->  do -- MACHINE INPUT (!!)
---         -- if null str 
---         --     then 
---         readFunction str >>= fmap (fmap (nextRound t)) . flip (launch t) game
---     Track  -> readFunction str >>= fmap (fmap (nextRound t)) . flip track game
---     Block  -> readFunction str >>= fmap (fmap (nextRound t)) . flip block game
---     Waiting NewGame -> 
---         if str == "continue"
---             then pure . (,) "NewGame Starting!" $ nextRound t game
---             else Left "Type \"continue\" to start a new game!"
---     _                -> pure (str,game)
 
 ---------------------{ Player Positioning }---------------------todo!!!!!!
 launch :: Time -> Function -> Game -> Either Error (String,Game)
@@ -359,16 +342,7 @@ block f game =
                 then Left "Not blocked!"
                 else pure . (,) "Projectile Blocked!" $ game
             
----------------------------------------------------------------
-
 ----------- Parser -------------
--- readFunction :: Input -> Either Error Function 
--- readFunction str = fmap (Function . f) (Grammar.parse str)
--- h
---     where
---     f tree x = Solver.solve' tree (x,0,0)
-
--- newtype Function = Function { apply :: Double -> Double }
 
 readFunction :: Input -> Either Error Function
 readFunction str = do
@@ -378,14 +352,19 @@ readFunction str = do
         >>= \ast -> Math.Solver.solve (dict 0) ast
         >>= \_   -> return 
             $ Function (\x -> either (const 0) id (Math.Solver.solve (dict x) ast))
+
+-- validateFunction :: Double -> Double -> Function -> Bool
+-- validateFunction 
+
 --------------------------------
 
 readPoint :: String -> Either Error Position
 readPoint str = maybe (Left "Invalid input!") tryPosition
     (Read.readMaybe str :: Maybe (Double,Double))
-
-tryPosition :: (Double,Double) -> Either Error Position
-tryPosition (a,b) = Bool.bool (Left "Out of range!") (Right $ Position a b) (validPosition (a,b))
+    where
+    tryPosition :: (Double,Double) -> Either Error Position
+    tryPosition (a,b) = Bool.bool (Left "Out of range!") (Right $ Position a b) 
+        (validPosition (a,b))
 
 validPosition :: (Double,Double) -> Bool
 validPosition (a,b) = (-1 < a && a < 1 && a /= 0) && (-1 < b && b < 1)

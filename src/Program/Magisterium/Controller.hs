@@ -25,8 +25,8 @@ event :: Time -> Time -> (Message, Time -> Game -> Game) -> Game -> Maybe (Messa
 event t limit (msg,f) game = Bool.bool Nothing (Just (msg,newGame)) activated
     where 
     activated = toSecond (t - t0) >= limit
-    t0 = time game
-    newGame = f t game
+    t0        = time game
+    newGame   = f t game
 
 insertRandomPositionP1 :: Position -> Time -> Game -> Game
 insertRandomPositionP1 randPos t game = nextRound t $ game { player1 = newPlayer }
@@ -34,11 +34,11 @@ insertRandomPositionP1 randPos t game = nextRound t $ game { player1 = newPlayer
     newPlayer = insertPosition (randPos) (player1 game)
 
 insertRandomPositionP2 :: Position -> Time -> Game -> Game
-insertRandomPositionP2 (Position xP2 yP2) t game = 
-    nextRound t $ game { player2 = newPlayer }
+insertRandomPositionP2 (Position xP2 yP2) t game = nextRound t 
+    $ game { player2 = newPlayer }
     where
-    xP1 = (x . position . player1) game
-    newXP2 = Bool.bool xP2 (negate xP2) (sameSideYAxis xP1 xP2)
+    xP1       = (x . position . player1) game
+    newXP2    = Bool.bool xP2 (negate xP2) (sameSideYAxis xP1 xP2)
     newPlayer = insertPosition (Position newXP2 yP2) (player2 game)
 
 newGame :: Time -> Game -> Game

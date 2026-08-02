@@ -1,16 +1,12 @@
-module Struct.Interface where
+module Interface where
 
-import Data.Map as Map
+import qualified Graphics.UI.GLUT as GLUT
 
-import Struct.Manager as Manager
-import Struct.Program as Program
-import Struct.System  as System
-import Struct.DBMS    as DBMS
+class Interface p where
+    display       :: p -> GLUT.DisplayCallback
+    keyboardMouse :: p -> GLUT.KeyboardMouseCallback
+    mouse         :: p -> GLUT.MouseCallback
+    motion        :: p -> GLUT.MotionCallback
+    passiveMotion :: p -> GLUT.MotionCallback
 
-data Interface = Interface
-    { manager  :: Manager Program 
-    , database :: Map Program (DBMS String) }
-
-select :: Interface -> Maybe (DBMS String)
-select i = manager i >>= flip (Map.lookup . vert) (database i)
 

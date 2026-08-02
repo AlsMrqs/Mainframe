@@ -31,14 +31,7 @@ main = do
     _window      <- GLUT.createWindow progName
 
     time <- Math.getTime
-
-    mvar <- MVar.newMVar
-        $ System.System (GLUT.Size 300 300)
-            Shell.newShell []
-            (Manager.fromList ["bitmap","magisterium"])
-            $ System.Program
-                (Just . BitMap.bitmap $ GLUT.Size 300 300)
-                (Just $ Magisterium.test time)
+    mvar <- mvarSystem time
 
     tidGameTimer <- Concurrent.forkIO (Hardware.gameTimer mvar)
 
@@ -50,4 +43,10 @@ main = do
     GLUT.motionCallback        GLUT.$= Just (Hardware.motion         mvar)
     GLUT.passiveMotionCallback GLUT.$= Just (Hardware.passiveMotion  mvar)
     GLUT.mainLoop
+
+mvarSystem :: Double -> IO (MVar.MVar System.System)
+mvarSystem time = MVar.newMVar . System.System (GLUT.Size 300 300)
+    Shell.newShell []
+    (Manager.fromList ["magisterium"])
+    $ System.Program Nothing (Just $ Magisterium.test time)
 

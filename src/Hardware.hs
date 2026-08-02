@@ -107,12 +107,6 @@ keyboardMouse mvarSystem key keyState modifiers position = do
         (GLUT.Char x, GLUT.Down) -> System.modifier x
         _                        -> id
 
-    -- altUpAction :: Time -> GLUT.Key -> GLUT.KeyState -> System.System -> System.System
-    -- altUpAction t key' keyState' system = case (key', keyState') of
-    --     (GLUT.Char x, GLUT.Down) -> Bool.bool id (runGameInput t) ((==) x '\r') 
-    --         $ System.shellFunction (Shell.insertInbox x) system
-    --     _                        -> system
-
     altUpAction :: Time -> GLUT.Key -> GLUT.KeyState -> System.System -> IO System.System
     altUpAction t key' keyState' system = case (key', keyState') of
         (GLUT.Char x, GLUT.Down) -> Bool.bool (return . id) (runGameInput t) ((==) x '\r') 
@@ -124,23 +118,22 @@ keyboardMouse mvarSystem key keyState modifiers position = do
         where
         input  = (Shell.lastInput . System.shell) system
         update = \game -> do
-            result <- MagisteriumDisplay.play t input game 
+            newInput <- do
+                ni <- Bool.bool (return input) (MagisteriumDisplay.autoLaunch game)
+                    $ (MagisteriumDisplay.status game == MagisteriumDisplay.Launch) 
+                        && (null input) --  == " ")
+                return ni
+            -- System.shellFunction Shell.insertInbox system
+                
+            result <- MagisteriumDisplay.play t newInput game -- input game 
             case result of
                 Left msg            -> return $ System.insertMessage msg system
-                Right (msg,newGame) -> return $ System.magisteriumFunction 
-                    (const newGame) 
-                    (System.insertMessage msg system)
-
-    -- runGameInput :: Time -> System.System -> System.System
-    -- runGameInput t system = maybe system update (System.callMagisterium system)
-    --     where
-    --     input  = (Shell.lastInput . System.shell) system
-    --     update = \game -> 
-    --         case MagisteriumDisplay.play t input game of
-    --             Left msg            -> System.insertMessage msg system
-    --             Right (msg,newGame) -> System.magisteriumFunction 
-    --                 (const newGame) 
-    --                 (System.insertMessage msg system)
+                Right (msg,newGame) -> return 
+                    . System.shellFunction Shell.updateHistory -- system
+                    . (\sys -> foldl (\acc x -> System.shellFunction (Shell.insertInbox x) acc) sys newInput)
+                    $ System.magisteriumFunction 
+                        (const newGame) 
+                        (System.insertMessage msg system)
 
 mouse :: MVar.MVar (System.System) -> GLUT.MouseCallback
 mouse mvar _but _keyState _pos = do
