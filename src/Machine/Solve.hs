@@ -50,9 +50,6 @@ newMatrix k (xp1,yp1) (xp2,yp2) = Matrix.fromList [(++) l1 [yp1],(++) l2 [yp2]]
 roundIt :: Double -> Double
 roundIt k = fromIntegral (round (k * 1e2) :: Integer) / 1e2
 
-roundCof :: Double -> Double
-roundCof k = fromIntegral (round (k * 1e5) :: Integer) / 1e5
-
 machine :: Char -> [[Double]] -> Dictionary -> IO Dictionary
 machine _ []     dict = return dict
 machine c (l:ls) dict = case calculate c l dict of
@@ -72,10 +69,10 @@ solution :: Int -> Coord -> Coord -> IO String
 solution degree (xp1,yp1) (xp2,yp2) = do
     let baseMatrix = newMatrix degree (xp1,yp1) (xp2,yp2)
         matrix     = polish baseMatrix
+        format     = fixNegative . roundIt
     dict <- machine 'a' (adapt matrix) Map.empty
     return . List.intercalate " + "
-        -- $ foldr (\(k,u) acc -> ("("++(show u)++") * x^"++(show k)) : acc) [] 
-        $ foldr (\(k,u) acc -> ("(("++(fixNegative u)++") * (x^"++(show k)++"))") : acc) [] 
+        $ foldr (\(k,u) acc -> ("(("++(format u)++") * (x^"++(show k)++"))") : acc) [] 
         $ zipWith (flip (,) . snd) (Map.toList dict) [0..degree]
 
 fixNegative :: Double -> String
