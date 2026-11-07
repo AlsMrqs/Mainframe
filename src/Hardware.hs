@@ -18,6 +18,15 @@ import qualified Data.Time.Clock as Clock
 import qualified Control.Monad.State as State
 -- import qualified Solve as Solve
 
+-- [?] Hardware function <- from Math
+-- getTime :: IO Double
+-- getTime = do
+--     curretTime <- Clock.getCurrentTime
+--     return
+--         . (/1e9) . fromIntegral
+--         . Clock.diffTimeToPicoseconds 
+--         $ Clock.utctDayTime curretTime
+
 systemStatus :: MVar.MVar System.System -> IO ()
 systemStatus mvar = do
     sys <- MVar.readMVar mvar
@@ -121,7 +130,7 @@ keyboardMouse mvarSystem key keyState modifiers position = do
             newInput <- do
                 ni <- Bool.bool (return input) (MagisteriumDisplay.autoLaunch game)
                     $ (MagisteriumDisplay.status game == MagisteriumDisplay.Launch) 
-                        && (null input) --  == " ")
+                        && (input == "machine") --  == " ")
                 return ni
             -- System.shellFunction Shell.insertInbox system
                 

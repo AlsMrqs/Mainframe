@@ -26,14 +26,15 @@ import qualified Program.BitMap.BitMap as BitMap
 
 main :: IO ()
 main = do
+    -- GLUT initialization
     (progName,_) <- GLUT.getArgsAndInitialize
     GLUT.initialWindowSize GLUT.$= GLUT.Size 300 300
-    _window      <- GLUT.createWindow progName
+    _window <- GLUT.createWindow progName
 
-    time <- Math.getTime
-    mvar <- mvarSystem time
-
-    tidGameTimer <- Concurrent.forkIO (Hardware.gameTimer mvar)
+    -- Internal programs managements initialization
+    time    <- Math.getTime
+    mvar    <- mvarSystem time
+    _       <- Concurrent.forkIO (Hardware.gameTimer mvar) -- [?]
 
     MVar.readMVar mvar >>= putStrLn . (++) "Initializing: " . show
 

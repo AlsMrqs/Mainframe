@@ -1,7 +1,7 @@
 module Render where
 
-import qualified Graphics.UI.GLUT as GLUT
 import qualified Graphics.Rendering.OpenGL as OpenGL hiding (Program)
+import qualified Graphics.UI.GLUT as GLUT
 import qualified Space as Space
 import qualified Screen as Screen
 

@@ -13,12 +13,11 @@ import qualified Render as Render
 display :: BitMap.BitMap -> GLUT.DisplayCallback
 display _bitmap = do
     GLUT.clear [GLUT.ColorBuffer]
-
     GLUT.color $ currentRGB _bitmap
-    let elementList = Set.toList $ bitSet _bitmap
-
-    mapM_ (\el -> OpenGL.renderPrimitive  (Screen.model el) 
-        $ Render.flash (Render.constellation el)) elementList
+    (mapM_ f . Set.toList . bitSet) _bitmap
+    where
+    f k = OpenGL.renderPrimitive (Screen.model k) 
+        . Render.flash $ (Render.constellation k)
 
 type CallbackMouse = GLUT.Size ->
     GLUT.MouseButton -> GLUT.KeyState -> GLUT.Position -> BitMap.BitMap -> BitMap.BitMap

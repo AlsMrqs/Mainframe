@@ -8,6 +8,7 @@ type Point = (Double, Double, Double)
 fromIntegralPoint :: (Integral a) => (a,a,a) -> Point
 fromIntegralPoint (x,y,z) = (fromIntegral x, fromIntegral y, fromIntegral z)
 
+-- [?] Hardware function
 getTime :: IO Double
 getTime = do
     curretTime <- Clock.getCurrentTime
